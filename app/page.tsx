@@ -294,6 +294,14 @@ export default function NatuclinicFunnel() {
     })
   }
 
+  const playNotificationSound = () => {
+    const notification = new Audio("/notification.mp3")
+    notification.volume = 0.4
+    notification.play().catch(() => {
+      console.warn("[Natuclinic] Notification sound missing")
+    })
+  }
+
   const toggleMute = () => {
     if (videoRef.current) {
       const newMutedState = !isMuted
@@ -326,6 +334,7 @@ export default function NatuclinicFunnel() {
         }
 
         setMessages((prev) => [...prev, newMessage])
+        playNotificationSound()
         setIsTyping(false)
 
         if (audioUrl) {
