@@ -538,7 +538,7 @@ export default function NatuclinicFunnel() {
       setTimeout(() => {
         addDoctorMessage(
           "Deixa eu analisar tudo que você me contou...",
-          "/avaliando.mp3",
+          undefined,
         )
 
         setTimeout(() => {
