@@ -182,6 +182,8 @@ export default function NatuclinicFunnel() {
   const [currentServicePage, setCurrentServicePage] = useState(0)
   const [userName, setUserName] = useState("")
   const [userPhone, setUserPhone] = useState("")
+  const [videoProgress, setVideoProgress] = useState(0)
+  const [showVideoControls, setShowVideoControls] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -300,6 +302,7 @@ export default function NatuclinicFunnel() {
 
   const handleVideoEnded = () => {
     setVideoEnded(true)
+    setShowVideoControls(true)
     playAudio(
       "/avaliacao-corpo.mp3",
       () => {
@@ -318,6 +321,7 @@ export default function NatuclinicFunnel() {
       videoRef.current.pause()
     }
     setVideoEnded(true)
+    setShowVideoControls(true)
   }
 
   const startChat = () => {
@@ -509,9 +513,10 @@ export default function NatuclinicFunnel() {
   return (
     <div className="min-h-screen bg-background">
       {step === "video" && (
-        <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-pink-50 to-orange-50">
-          {!videoError && (
-            <video
+        <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black font-sans">
+          <div className="relative w-full max-w-[450px] h-full md:h-[90vh] md:rounded-3xl overflow-hidden shadow-2xl bg-black aspect-[9/16]">
+            {!videoError && (
+              <video
               ref={videoRef}
               autoPlay
               playsInline
@@ -519,6 +524,17 @@ export default function NatuclinicFunnel() {
               className="absolute inset-0 w-full h-full object-cover"
               onEnded={handleVideoEnded}
               onError={handleVideoError}
+              onTimeUpdate={() => {
+                if (videoRef.current) {
+                  const current = videoRef.current.currentTime
+                  const total = videoRef.current.duration
+                  setVideoProgress((current / total) * 100)
+                  
+                  if (total - current <= 2) {
+                    setShowVideoControls(true)
+                  }
+                }
+              }}
             >
               <source
                 src="/IMG_3624.mov"
@@ -527,33 +543,46 @@ export default function NatuclinicFunnel() {
             </video>
           )}
 
-          {/* Always show overlay and content */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/60" />
-
-          <div className="relative z-10 text-center px-6 max-w-3xl space-y-8">
-            <h1 className="text-5xl md:text-7xl font-serif text-balance leading-tight text-foreground">Bem-vindo(a) à Natuclinic</h1>
-            <p className="text-2xl md:text-3xl font-light text-primary">Instituto de Estética Integrativa</p>
-
-            <div className="flex flex-col items-center gap-4 mt-12">
-              {!videoEnded && !videoError && (
-                <Button 
-                  variant="ghost" 
-                  onClick={handleSkipVideo} 
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Pular video
-                </Button>
-              )}
-              
-              <Button 
-                size="lg" 
-                onClick={startChat} 
-                className="px-12 py-7 text-lg font-medium"
-                disabled={isPlayingAudio}
-              >
-                Comecar minha avaliacao
-              </Button>
+          {/* Stories Progress Bar */}
+          <div className="absolute top-6 left-6 right-6 z-30 flex gap-1">
+            <div className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-white transition-all duration-100 ease-linear" 
+                style={{ width: `${videoProgress}%` }}
+              />
             </div>
+          </div>
+
+          {/* Top Skip Button */}
+          {!videoEnded && !videoError && (
+            <button 
+              onClick={handleSkipVideo} 
+              className="absolute top-10 right-6 z-30 text-white/80 hover:text-white text-sm font-medium bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full transition-all"
+            >
+              Pular
+            </button>
+          )}
+
+          {/* Always show overlay and content */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+
+          <div className={`relative z-10 text-center px-6 max-w-lg mx-auto flex flex-col h-full justify-center space-y-6 transition-all duration-500 ${
+            showVideoControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+          }`}>
+            <div className="space-y-2">
+              <h1 className="text-4xl md:text-5xl font-serif text-white drop-shadow-lg">Bem-vindo(a) à Natuclinic</h1>
+              <p className="text-lg md:text-xl font-light text-white/90">Instituto de Estética Integrativa</p>
+            </div>
+
+            <Button 
+              size="lg" 
+              onClick={startChat} 
+              className="w-full py-7 text-lg font-medium bg-white text-[#4A3328] hover:bg-white/90 border-none shadow-xl"
+              disabled={isPlayingAudio}
+            >
+              Começar minha avaliação
+            </Button>
+          </div>
           </div>
         </div>
       )}
@@ -598,7 +627,7 @@ export default function NatuclinicFunnel() {
                       }`}
                     >
                       <div className="flex flex-col">
-                        <p className="text-sm md:text-base leading-relaxed">{message.content}</p>
+                        {!message.audioUrl && <p className="text-sm md:text-base leading-relaxed">{message.content}</p>}
                         {message.type === "user" && (
                           <div className="flex justify-end items-center gap-1 mt-1 -mb-1 opacity-70">
                             <span className="text-[10px]">agora</span>
@@ -607,17 +636,18 @@ export default function NatuclinicFunnel() {
                         )}
                       </div>
 
-                      {message.audioUrl && isPlayingAudio && audioRef.current?.src === message.audioUrl && (
-                        <div className="flex items-center gap-1 mt-2">
-                          <Volume2 className="w-4 h-4 text-primary" />
+                      {message.audioUrl && (
+                        <div className="flex items-center gap-1">
+                          <Volume2 className={`w-4 h-4 ${isPlayingAudio && audioRef.current?.src === message.audioUrl ? "text-primary animate-pulse" : "text-muted-foreground"}`} />
                           <div className="flex gap-0.5 items-center">
-                            {[...Array(5)].map((_, i) => (
+                            {[...Array(15)].map((_, i) => (
                               <div
                                 key={i}
-                                className="w-0.5 bg-primary rounded-full animate-soundwave"
+                                className={`w-0.5 bg-primary rounded-full ${isPlayingAudio && audioRef.current?.src === message.audioUrl ? "animate-soundwave" : ""}`}
                                 style={{
-                                  height: `${Math.random() * 12 + 4}px`,
+                                  height: `${Math.random() * 12 + 8}px`,
                                   animationDelay: `${i * 0.1}s`,
+                                  opacity: (isPlayingAudio && audioRef.current?.src === message.audioUrl) ? 1 : 0.4
                                 }}
                               />
                             ))}
