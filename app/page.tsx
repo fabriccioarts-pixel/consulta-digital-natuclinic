@@ -301,11 +301,19 @@ export default function NatuclinicFunnel() {
     })
   }
 
-  const playNotificationSound = () => {
-    const notification = new Audio("/notification.mp3")
+  const playReceiveSound = () => {
+    const notification = new Audio("/receive notification.mp3")
     notification.volume = 0.4
     notification.play().catch(() => {
-      console.warn("[Natuclinic] Notification sound missing")
+      console.warn("[Natuclinic] Receive notification sound missing")
+    })
+  }
+
+  const playSendSound = () => {
+    const notification = new Audio("/send notification.mp3")
+    notification.volume = 0.4
+    notification.play().catch(() => {
+      console.warn("[Natuclinic] Send notification sound missing")
     })
   }
 
@@ -341,7 +349,7 @@ export default function NatuclinicFunnel() {
         }
 
         setMessages((prev) => [...prev, newMessage])
-        playNotificationSound()
+        playReceiveSound()
         setIsTyping(false)
 
         if (audioUrl) {
@@ -355,6 +363,7 @@ export default function NatuclinicFunnel() {
 
   const addUserMessage = (content: string) => {
     playPencilSound()
+    playSendSound()
 
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
