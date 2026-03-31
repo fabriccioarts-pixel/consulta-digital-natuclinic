@@ -571,7 +571,7 @@ export default function NatuclinicFunnel() {
     const complaintLabel = complaints.find((c) => c.id === selectedComplaint)?.label || ""
     const fullDetails = `${detailSummary}. Notas: ${recentExams || faceIssue || generalDetails || "Nenhuma nota adicional"}`
 
-    fetch("/api/send", {
+    fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -580,7 +580,14 @@ export default function NatuclinicFunnel() {
         complaint: complaintLabel,
         details: fullDetails,
       }),
-    }).catch((err) => console.error("Error sending lead:", err))
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          console.log("Lead sent correctly")
+        }
+      })
+      .catch((err) => console.error("Error notifying lead:", err))
 
     addUserMessage(detailSummary)
 
