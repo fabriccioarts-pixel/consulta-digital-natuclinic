@@ -369,7 +369,7 @@ export default function NatuclinicFunnel() {
           if (!isPlayingAudio) {
             setChatPhase("detail-form")
           }
-        }, 6000)
+        }, (complaint === "outro") ? 2000 : 6000)
       }, 3000)
     }, 1500)
   }
