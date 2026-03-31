@@ -518,8 +518,8 @@ export default function NatuclinicFunnel() {
           <div className="relative z-10 min-h-screen flex flex-col">
             <div className="bg-card/80 backdrop-blur-md border-b border-border/50 p-4">
               <div className="max-w-4xl mx-auto flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-2xl">👩‍⚕️</span>
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                  <img src="/debora-074.jpg" alt="Dra. Débora" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h2 className="font-semibold">Dra. Débora - Natuclinic</h2>
