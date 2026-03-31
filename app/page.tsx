@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Volume2 } from "lucide-react"
+import { Volume2, Phone, Video, CheckCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
@@ -157,38 +157,20 @@ const complaints = [
   },
 ]
 
-const testimonials = [
-  {
-    id: 1,
-    name: "Ana Paula",
-    text: "Mudou completamente minha autoestima. A Dra. Débora é sensacional!",
-    treatment: "Harmonização Facial",
-  },
-  {
-    id: 2,
-    name: "Juliana",
-    text: "Finalmente entendi o que estava causando meu cansaço. Tratamento transformador.",
-    treatment: "Ortomolecular",
-  },
-  {
-    id: 3,
-    name: "Mariana",
-    text: "Ambiente acolhedor e resultados incríveis. Super recomendo!",
-    treatment: "Rejuvenescimento Facial",
-  },
-]
-
 export default function NatuclinicFunnel() {
   const [step, setStep] = useState<"video" | "chat">("video")
   const [chatPhase, setChatPhase] = useState<
     | "welcome"
+    | "name-question"
+    | "name-input"
+    | "phone-question"
+    | "phone-input"
     | "complaint-question"
     | "complaint-selection"
     | "detail-question"
     | "detail-form"
     | "analyzing"
     | "service"
-    | "testimonials"
     | "whatsapp"
   >("welcome")
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -198,6 +180,8 @@ export default function NatuclinicFunnel() {
   const [videoEnded, setVideoEnded] = useState(false)
   const [videoError, setVideoError] = useState(false)
   const [currentServicePage, setCurrentServicePage] = useState(0)
+  const [userName, setUserName] = useState("")
+  const [userPhone, setUserPhone] = useState("")
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -341,14 +325,55 @@ export default function NatuclinicFunnel() {
     setStep("chat")
 
     setTimeout(() => {
+      setChatPhase("name-question")
       addDoctorMessage(
-        "Olá! Eu sou a Dra. Débora. Vou te fazer algumas perguntas para entender melhor como posso te ajudar.",
+        "Olá! Eu sou a Dra. Débora. Antes de começarmos, como você gostaria de ser chamado(a)?",
         undefined,
         500,
       )
 
       setTimeout(() => {
-        setChatPhase("complaint-question")
+        setChatPhase("name-input")
+      }, 2000)
+    }, 500)
+  }
+
+  const handleNameSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (!userName.trim() || isPlayingAudio) return
+
+    addUserMessage(userName.trim())
+    setChatPhase("phone-question")
+
+    setTimeout(() => {
+      addDoctorMessage(
+        `Prazer em te conhecer, ${userName.trim()}! Para que eu possa salvar seu contato, qual o seu melhor número de WhatsApp?`,
+        undefined,
+        1500,
+      )
+
+      setTimeout(() => {
+        setChatPhase("phone-input")
+      }, 2000)
+    }, 1000)
+  }
+
+  const handlePhoneSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault()
+    const cleanPhone = userPhone.replace(/\D/g, "")
+    if (cleanPhone.length < 10 || isPlayingAudio) return
+
+    addUserMessage(userPhone)
+    setChatPhase("complaint-question")
+
+    setTimeout(() => {
+      addDoctorMessage(
+        "Ótimo! Agora vamos falar sobre o que te trouxe aqui.",
+        undefined,
+        1500,
+      )
+
+      setTimeout(() => {
         addDoctorMessage(
           "O que você sente que precisa de cuidado neste momento?",
           "/oque-mais-incomoda.mp3",
@@ -359,7 +384,19 @@ export default function NatuclinicFunnel() {
           setChatPhase("complaint-selection")
         }, 3000)
       }, 2000)
-    }, 500)
+    }, 1000)
+  }
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "")
+    if (numbers.length <= 11) {
+      let masked = numbers
+      if (numbers.length > 0) masked = "(" + numbers
+      if (numbers.length > 2) masked = "(" + numbers.substring(0, 2) + ") " + numbers.substring(2)
+      if (numbers.length > 7) masked = "(" + numbers.substring(0, 2) + ") " + numbers.substring(2, 7) + "-" + numbers.substring(7, 11)
+      return masked
+    }
+    return value.substring(0, 15)
   }
 
   const handleComplaintSelect = (complaint: Complaint) => {
@@ -406,10 +443,23 @@ export default function NatuclinicFunnel() {
       detailSummary = "Detalhes compartilhados"
     }
 
+    const complaintLabel = complaints.find((c) => c.id === selectedComplaint)?.label || ""
+    const fullDetails = `${detailSummary}. Notas: ${recentExams || faceIssue || generalDetails || "Nenhuma nota adicional"}`
+
+    fetch("/api/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: userName,
+        phone: userPhone,
+        complaint: complaintLabel,
+        details: fullDetails,
+      }),
+    }).catch((err) => console.error("Error sending lead:", err))
+
     addUserMessage(detailSummary)
 
     setChatPhase("analyzing")
-
     setTimeout(() => {
       addDoctorMessage(
         "Obrigada! Com isso consigo te orientar melhor.",
@@ -433,11 +483,6 @@ export default function NatuclinicFunnel() {
 
   const handleServiceNext = () => {
     if (isPlayingAudio) return
-    setChatPhase("testimonials")
-  }
-
-  const handleTestimonialsNext = () => {
-    if (isPlayingAudio) return
 
     addDoctorMessage(
       "Agora vou te encaminhar para nossa equipe finalizar seu agendamento!",
@@ -455,7 +500,7 @@ export default function NatuclinicFunnel() {
     if (!selectedComplaint || isPlayingAudio) return
 
     const service = services[selectedComplaint]
-    const message = `Olá! Passei pela consulta digital da Dra. Débora na Natuclinic e fui orientada sobre ${service.title}. Gostaria de agendar minha consulta!`
+    const message = `Olá! Passei pela consulta digital da Dra. Débora na Natuclinic e fui orientado(a) sobre ${service.title}. Gostaria de agendar minha consulta!`
 
     const encodedMessage = encodeURIComponent(message)
     window.open(`https://wa.me/5561992551867?text=${encodedMessage}`, "_blank")
@@ -486,7 +531,7 @@ export default function NatuclinicFunnel() {
           <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/60" />
 
           <div className="relative z-10 text-center px-6 max-w-3xl space-y-8">
-            <h1 className="text-5xl md:text-7xl font-serif text-balance leading-tight text-foreground">Bem-vinda à Natuclinic</h1>
+            <h1 className="text-5xl md:text-7xl font-serif text-balance leading-tight text-foreground">Bem-vindo(a) à Natuclinic</h1>
             <p className="text-2xl md:text-3xl font-light text-primary">Instituto de Estética Integrativa</p>
 
             <div className="flex flex-col items-center gap-4 mt-12">
@@ -516,14 +561,24 @@ export default function NatuclinicFunnel() {
       {step === "chat" && (
         <div className="min-h-screen bg-background relative">
           <div className="relative z-10 min-h-screen flex flex-col">
-            <div className="bg-card/80 backdrop-blur-md border-b border-border/50 p-4">
-              <div className="max-w-4xl mx-auto flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
-                  <img src="/debora-074.jpg" alt="Dra. Débora" className="w-full h-full object-cover" />
+            <div className="bg-[#4A3328] text-white shadow-sm border-b border-[#3a271f] p-4">
+              <div className="max-w-4xl mx-auto flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/10">
+                    <img src="/debora-074.jpg" alt="Dra. Débora" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-[17px]">Dra. Débora - Natuclinic</h2>
+                    <p className="text-xs text-white/70 mt-0.5">Online</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-semibold">Dra. Débora - Natuclinic</h2>
-                  <p className="text-xs text-muted-foreground">online</p>
+                <div className="flex items-center gap-2 md:gap-4 text-white">
+                  <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <Video className="w-5 h-5" />
+                  </button>
+                  <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <Phone className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -538,11 +593,19 @@ export default function NatuclinicFunnel() {
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                         message.type === "user"
-                          ? "bg-primary text-primary-foreground rounded-br-sm"
-                          : "bg-card/90 backdrop-blur-sm border border-border rounded-bl-sm"
+                          ? "bg-primary text-primary-foreground rounded-br-none"
+                          : "bg-card/90 backdrop-blur-sm border border-border rounded-bl-none"
                       }`}
                     >
-                      <p className="text-sm md:text-base leading-relaxed">{message.content}</p>
+                      <div className="flex flex-col">
+                        <p className="text-sm md:text-base leading-relaxed">{message.content}</p>
+                        {message.type === "user" && (
+                          <div className="flex justify-end items-center gap-1 mt-1 -mb-1 opacity-70">
+                            <span className="text-[10px]">agora</span>
+                            <CheckCheck className="w-4 h-4 text-blue-500" />
+                          </div>
+                        )}
+                      </div>
 
                       {message.audioUrl && isPlayingAudio && audioRef.current?.src === message.audioUrl && (
                         <div className="flex items-center gap-1 mt-2">
@@ -567,13 +630,61 @@ export default function NatuclinicFunnel() {
 
                 {isTyping && (
                   <div className="flex justify-start animate-fade-in">
-                    <div className="bg-card/90 backdrop-blur-sm border border-border rounded-2xl rounded-bl-sm px-4 py-3">
+                    <div className="bg-card/90 backdrop-blur-sm border border-border rounded-2xl rounded-bl-none px-4 py-3">
                       <div className="flex gap-1">
                         <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" />
                         <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce delay-100" />
                         <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce delay-200" />
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {chatPhase === "name-input" && !isPlayingAudio && (
+                  <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-6 space-y-4 animate-fade-in pt-4">
+                    <form onSubmit={handleNameSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Seu nome</label>
+                        <input
+                          type="text"
+                          value={userName}
+                          onChange={(e) => setUserName(e.target.value)}
+                          placeholder="Digite seu nome..."
+                          className="flex h-12 w-full rounded-md border border-input bg-background/50 px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                          autoFocus
+                        />
+                      </div>
+                      <Button type="submit" disabled={!userName.trim() || isPlayingAudio} className="w-full text-base" size="lg">
+                        Continuar
+                      </Button>
+                    </form>
+                  </div>
+                )}
+
+                {chatPhase === "phone-input" && !isPlayingAudio && (
+                  <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-6 space-y-4 animate-fade-in pt-4">
+                    <form onSubmit={handlePhoneSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Seu WhatsApp</label>
+                        <input
+                          type="tel"
+                          value={userPhone}
+                          onChange={(e) => setUserPhone(formatPhone(e.target.value))}
+                          placeholder="(00) 00000-0000"
+                          className="flex h-12 w-full rounded-md border border-input bg-background/50 px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                          autoFocus
+                        />
+                        <p className="text-[10px] text-muted-foreground">Insira o DDD e o número completo</p>
+                      </div>
+                      <Button 
+                        type="submit" 
+                        disabled={userPhone.replace(/\D/g, "").length < 10 || isPlayingAudio} 
+                        className="w-full text-base" 
+                        size="lg"
+                      >
+                        Continuar
+                      </Button>
+                    </form>
                   </div>
                 )}
 
@@ -717,32 +828,6 @@ export default function NatuclinicFunnel() {
                           </Button>
                         )}
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {chatPhase === "testimonials" && (
-                  <div className="space-y-6 animate-fade-in">
-                    <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-6">
-                      <h3 className="text-2xl font-serif mb-6 text-center">Veja o que nossas pacientes dizem</h3>
-
-                      <div className="space-y-4">
-                        {testimonials.map((testimonial) => (
-                          <div key={testimonial.id} className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                            <p className="italic mb-2">"{testimonial.text}"</p>
-                            <div className="flex justify-between items-center text-sm text-muted-foreground">
-                              <span className="font-medium">{testimonial.name}</span>
-                              <span>{testimonial.treatment}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {!isPlayingAudio && (
-                        <Button onClick={handleTestimonialsNext} className="w-full mt-6" size="lg">
-                          Agendar minha consulta
-                        </Button>
-                      )}
                     </div>
                   </div>
                 )}
