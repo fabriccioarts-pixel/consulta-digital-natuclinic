@@ -88,6 +88,7 @@ export default function NatuclinicFunnel() {
     | "intro-cta"
     | "pre-qualify"
     | "pre-qualify-list"
+    | "video-ended"
     | "pre-qualify-cta"
     | "name-question"
     | "name-input"
@@ -192,21 +193,26 @@ export default function NatuclinicFunnel() {
       }, 1500)
     }, 3500)
 
-    // Sequência de mensagens após o vídeo aparecer
+  }
+
+  const handleVideoContinue = () => {
+    addUserMessage("Continuar")
+    setChatPhase("pre-qualify")
+
     setTimeout(() => {
       addDoctorMessage(
         "Nosso espaço foi projetado para proporcionar uma experiência estética premium, com **conforto, tranquilidade e atenção aos detalhes**.",
         undefined, 800,
       )
-    }, 7000)
+    }, 800)
 
     setTimeout(() => {
       addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de cuidados com a pele", undefined, 600)
-    }, 10000)
+    }, 3800)
 
     setTimeout(() => {
       addDoctorMessage("Tudo pensado para transformar esse momento em uma **experiência única de autocuidado**.", undefined, 700)
-    }, 13000)
+    }, 6800)
 
     setTimeout(() => {
       addPhotoGallery([
@@ -218,26 +224,26 @@ export default function NatuclinicFunnel() {
         "/fotos-clinica/unnamed (4).webp",
         "/fotos-clinica/unnamed (5).webp",
       ])
-    }, 15500)
+    }, 9300)
 
     setTimeout(() => {
       addDoctorMessage(
         "✨ Nossa Limpeza de Pele ✨\n\nUm protocolo completo para limpar, renovar e cuidar profundamente da sua pele 💆🏻‍♀️\n\n✔️ Higienização da pele\n✔️ Esfoliação\n✔️ Peeling de Diamante\n✔️ Emoliência\n✔️ Vapor de ozônio\n✔️ Extração de cravos e impurezas\n✔️ Placa ultrassônica\n✔️ Aplicação de tônicos\n✔️ Alta frequência\n✔️ Água termal\n✔️ Hidratação\n✔️ Spa labial\n✔️ Finalização com protetor solar ☀️",
         undefined, 900,
       )
-    }, 17500)
+    }, 11300)
 
     setTimeout(() => {
       addDoctorMessage(
         "Uma experiência relaxante com cuidados que deixam sua pele mais saudável, iluminada e renovada ✨\n\n💰 Investimento: **R$179,90**\n💳 PIX ou cartão",
         undefined, 700,
       )
-    }, 21000)
+    }, 14800)
 
     setTimeout(() => {
       addDoctorMessage("Se esse é o seu perfil, **vamos continuar**.", undefined, 500)
       setTimeout(() => setChatPhase("pre-qualify-cta"), 1500)
-    }, 24000)
+    }, 17800)
   }
 
   const handlePreQualifyCta = () => {
@@ -820,6 +826,7 @@ export default function NatuclinicFunnel() {
                             playsInline
                             controls
                             className="w-full max-h-[320px] object-cover"
+                            onEnded={() => setChatPhase("video-ended")}
                           />
                         </div>
                       </div>
@@ -931,6 +938,18 @@ export default function NatuclinicFunnel() {
                       className="bg-[#4A3328] text-white px-6 py-3 rounded-2xl rounded-br-none font-medium text-sm shadow-lg hover:bg-[#3a271f] transition-all active:scale-95"
                     >
                       Quero entender como funciona
+                    </button>
+                  </div>
+                )}
+
+                {/* VÍDEO: botão continuar após término */}
+                {chatPhase === "video-ended" && (
+                  <div className="flex justify-end animate-fade-in pt-2">
+                    <button
+                      onClick={handleVideoContinue}
+                      className="bg-[#4A3328] text-white px-6 py-3 rounded-2xl rounded-br-none font-medium text-sm shadow-lg hover:bg-[#3a271f] transition-all active:scale-95"
+                    >
+                      Continuar
                     </button>
                   </div>
                 )}
