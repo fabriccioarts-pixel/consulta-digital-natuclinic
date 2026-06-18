@@ -137,9 +137,10 @@ export default function NatuclinicFunnel() {
   const sendSfxRef = useRef<HTMLAudioElement | null>(null)
   const audioQueueRef = useRef<{ url: string; onEnd?: () => void }[]>([])
   const audioUnlockedRef = useRef(false)
+  const userHasInteracted = useRef(false)
 
   useEffect(() => {
-    if (chatContainerRef.current) {
+    if (userHasInteracted.current && chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
     }
   }, [messages, isTyping, chatPhase])
@@ -417,6 +418,7 @@ export default function NatuclinicFunnel() {
   }
 
   const addUserMessage = (content: string) => {
+    userHasInteracted.current = true
     playPencilSound()
     playSendSound()
 
