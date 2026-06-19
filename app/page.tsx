@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { track, trackCustom } from "@/lib/pixel"
 import { Phone, Video, CheckCheck, Play, Pause } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -175,6 +176,7 @@ export default function NatuclinicFunnel() {
 
   const handleIntroCta = () => {
     unlockAudio()
+    trackCustom("FunnelStart")
     addUserMessage("Quero entender como funciona")
     setChatPhase("pre-qualify")
 
@@ -469,6 +471,7 @@ export default function NatuclinicFunnel() {
 
   const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    trackCustom("NameSubmitted")
     if (!userName.trim() || isPlayingAudio) return
 
     addUserMessage(userName)
@@ -487,6 +490,7 @@ export default function NatuclinicFunnel() {
 
   const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    track("Lead", { content_name: "Natuclinic Limpeza de Pele" })
     if (userPhone.replace(/\D/g, "").length < 10 || isPlayingAudio) return
 
     addUserMessage(userPhone)
@@ -587,6 +591,7 @@ export default function NatuclinicFunnel() {
 
   const handleComplaintSelect = (complaint: Complaint) => {
     if (isPlayingAudio) return
+    trackCustom("ComplaintSelected", { complaint })
 
     setSelectedComplaint(complaint)
     const complaintLabel = complaints.find((c) => c.id === complaint)?.label || ""
@@ -713,6 +718,7 @@ export default function NatuclinicFunnel() {
   const handleSlotSelect = (slot: AvailableSlot) => {
     addUserMessage(`${slot.start}`)
     setSelectedSlot(slot)
+    track("Schedule", { content_name: "Limpeza de Pele Profunda" })
     setChatPhase("booking")
 
     fetch("/api/schedule", {
@@ -749,6 +755,7 @@ export default function NatuclinicFunnel() {
 
   const handleWhatsAppRedirect = () => {
     if (!selectedComplaint || isPlayingAudio) return
+    track("Contact", { content_name: "WhatsApp Natuclinic" })
     const service = services[selectedComplaint]
     let scheduleInfo = ""
     if (selectedDateData && selectedSlot) {
