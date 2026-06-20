@@ -134,7 +134,7 @@ export default function HarmonizacaoFunnel() {
     setTimeout(() => {
       addDoctorMessage(
         "Na Natuclinic, realizamos procedimentos de **harmonização facial** com foco em resultados naturais, seguros e personalizados.",
-        undefined, 800,
+        undefined, 1800,
       )
     }, 1500)
 
@@ -274,7 +274,7 @@ export default function HarmonizacaoFunnel() {
     sfx.play().catch(() => {})
   }
 
-  const addDoctorMessage = (content: string, audioUrl?: string, delay = 1000) => {
+  const addDoctorMessage = (content: string, audioUrl?: string, delay = 1800) => {
     setTimeout(() => {
       setIsTyping(true)
       setTimeout(() => {
@@ -344,7 +344,7 @@ export default function HarmonizacaoFunnel() {
     setTimeout(() => {
       addDoctorMessage(
         "Antes de te mostrar os detalhes, preciso entender se a **Natuclinic é realmente o que você procura**.",
-        undefined, 1400,
+        undefined, 2500,
       )
     }, 1000)
 
@@ -364,7 +364,7 @@ export default function HarmonizacaoFunnel() {
     setTimeout(() => {
       addDoctorMessage(
         "Nosso espaço foi pensado para você se sentir segura, confortável e bem cuidada durante todo o procedimento.",
-        undefined, 1400,
+        undefined, 2500,
       )
       setTimeout(() => setChatPhase("video-ended"), 300 + 1400 + 800)
     }, 7800 + 4000)
@@ -399,7 +399,7 @@ export default function HarmonizacaoFunnel() {
     setTimeout(() => {
       addDoctorMessage(
         "✨ Nossos procedimentos de Harmonização Facial ✨\n\n✔️ Toxina Botulínica (Botox)\n✔️ Preenchimento Labial\n✔️ Preenchimento Facial\n✔️ Rinomodelação\n✔️ Bioestimuladores de Colágeno\n✔️ Fios de PDO\n✔️ Skinbooster\n\nTodos realizados com produtos de alta qualidade e técnica personalizada para o seu rosto.",
-        undefined, 1500,
+        undefined, 2800,
       )
     }, 14500)
 
