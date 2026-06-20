@@ -360,20 +360,24 @@ export default function HarmonizacaoFunnel() {
     }, 7800)
   }
 
-  const handleVideoContinue = () => {
-    addUserMessage("Continuar")
+  const handleVideoEnded = () => {
     setChatPhase("pre-qualify")
-
     setTimeout(() => {
       addDoctorMessage(
         "Nosso espaço foi pensado para você se sentir segura, confortável e bem cuidada durante todo o procedimento.",
         undefined, 1400,
       )
-    }, 1000)
+      setTimeout(() => setChatPhase("video-ended"), 300 + 1400 + 800)
+    }, 800)
+  }
+
+  const handleVideoContinue = () => {
+    addUserMessage("Continuar")
+    setChatPhase("pre-qualify")
 
     setTimeout(() => {
       addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de harmonização", undefined, 1000)
-    }, 5000)
+    }, 800)
 
     setTimeout(() => {
       addDoctorMessage("Tudo pensado para que você saia se sentindo **mais bonita e confiante**.", undefined, 1200)
@@ -682,7 +686,7 @@ export default function HarmonizacaoFunnel() {
                           muted
                           playsInline
                           controls
-                          onEnded={() => setChatPhase("video-ended")}
+                          onEnded={handleVideoEnded}
                         />
                       </div>
                     </div>
