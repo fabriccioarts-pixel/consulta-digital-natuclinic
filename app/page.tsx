@@ -761,7 +761,8 @@ export default function NatuclinicFunnel() {
     if (selectedDateData && selectedSlot) {
       scheduleInfo = ` Escolhi o dia ${formatDateDisplay(selectedDateData.date)} às ${selectedSlot.start}.`
     }
-    const message = `Olá! Meu nome é ${userName}. Completei minha avaliação na Natuclinic sobre ${service.title}.${scheduleInfo} Gostaria de confirmar meu agendamento!`
+    const unitInfo = userUnit ? ` Prefiro ser atendida na unidade de ${userUnit}.` : ""
+    const message = `Olá! Meu nome é ${userName}. Completei minha avaliação na Natuclinic sobre ${service.title}.${unitInfo}${scheduleInfo} Gostaria de confirmar meu agendamento!`
     window.open(`https://wa.me/5561992551867?text=${encodeURIComponent(message)}`, "_blank")
   }
 
