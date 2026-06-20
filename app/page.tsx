@@ -874,11 +874,13 @@ export default function NatuclinicFunnel() {
                       >
                         <div className="flex flex-col">
                           <p className="text-sm md:text-base leading-relaxed whitespace-pre-line">{renderBold(message.content)}</p>
-                          {message.type === "user" && (
+                          {message.type === "user" ? (
                             <div className="flex justify-end items-center gap-1 mt-1 -mb-1 opacity-70">
-                              <span className="text-[10px]">agora</span>
+                              <span className="text-[10px]">{message.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
                               <CheckCheck className="w-4 h-4 text-blue-500" />
                             </div>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground/60 mt-1">{message.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
                           )}
                         </div>
 
@@ -958,9 +960,12 @@ export default function NatuclinicFunnel() {
                   <div className="flex justify-end animate-fade-in pt-2">
                     <button
                       onClick={handleVideoContinue}
-                      className="bg-[#4A3328] text-white px-6 py-3 rounded-2xl rounded-br-none font-medium text-sm shadow-lg hover:bg-[#3a271f] transition-all active:scale-95"
+                      className="bg-[#4A3328] text-white px-5 py-3 rounded-2xl rounded-br-none font-medium text-sm shadow-lg hover:bg-[#3a271f] transition-all active:scale-95 flex items-center gap-2"
                     >
                       Continuar
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 -rotate-45">
+                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                      </svg>
                     </button>
                   </div>
                 )}
@@ -970,9 +975,12 @@ export default function NatuclinicFunnel() {
                   <div className="flex justify-end animate-fade-in pt-2">
                     <button
                       onClick={handlePreQualifyCta}
-                      className="bg-[#4A3328] text-white px-8 py-3 rounded-2xl rounded-br-none font-medium text-sm shadow-lg hover:bg-[#3a271f] transition-all active:scale-95"
+                      className="bg-[#4A3328] text-white px-5 py-3 rounded-2xl rounded-br-none font-medium text-sm shadow-lg hover:bg-[#3a271f] transition-all active:scale-95 flex items-center gap-2"
                     >
                       Continuar
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 -rotate-45">
+                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                      </svg>
                     </button>
                   </div>
                 )}
