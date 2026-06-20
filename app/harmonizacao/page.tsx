@@ -95,7 +95,7 @@ export default function HarmonizacaoFunnel() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isTyping, setIsTyping] = useState(false)
   const [isPlayingAudio, setIsPlayingAudio] = useState(false)
-  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null)
+  const [selectedComplaints, setSelectedComplaints] = useState<Set<Complaint>>(new Set())
   const [userName, setUserName] = useState("")
   const [userPhone, setUserPhone] = useState("")
   const [userUnit, setUserUnit] = useState("")
@@ -504,12 +504,22 @@ export default function HarmonizacaoFunnel() {
     }, 1000)
   }
 
-  const handleComplaintSelect = (complaint: Complaint) => {
-    if (isPlayingAudio) return
-    trackCustom("HarmonizacaoComplaintSelected", { complaint })
-    setSelectedComplaint(complaint)
-    const label = complaints.find((c) => c.id === complaint)?.label || ""
-    addUserMessage(label)
+  const toggleComplaint = (complaint: Complaint) => {
+    setSelectedComplaints((prev) => {
+      const next = new Set(prev)
+      if (next.has(complaint)) next.delete(complaint)
+      else next.add(complaint)
+      return next
+    })
+  }
+
+  const handleComplaintsConfirm = () => {
+    if (selectedComplaints.size === 0 || isPlayingAudio) return
+    trackCustom("HarmonizacaoComplaintSelected", { complaints: [...selectedComplaints] })
+    const labels = [...selectedComplaints]
+      .map((id) => complaints.find((c) => c.id === id)?.label || "")
+      .join(", ")
+    addUserMessage(labels)
     setChatPhase("detail-question")
     setTimeout(() => {
       addDoctorMessage("Perfeito! Estou anotando aqui...")
@@ -520,9 +530,25 @@ export default function HarmonizacaoFunnel() {
     }, 1500)
   }
 
+  const getRecommendedService = (): ServiceInfo => {
+    const selected = [...selectedComplaints]
+    if (selected.length === 1) return services[selected[0]]
+    const labelList = selected
+      .map((id) => complaints.find((c) => c.id === id)?.label || "")
+      .filter(Boolean)
+      .join(", ")
+    return {
+      title: "Avaliação de Harmonização Personalizada",
+      description: "Protocolo completo para as suas preocupações",
+      longDescription: `Com base nas suas preocupações (${labelList}), nossa especialista vai avaliar o melhor conjunto de procedimentos para o seu rosto — resultado harmonioso e natural, respeitando suas características únicas.`,
+    }
+  }
+
   const handleDetailSubmit = () => {
     if (isPlayingAudio) return
-    const complaintLabel = complaints.find((c) => c.id === selectedComplaint)?.label || ""
+    const complaintLabels = [...selectedComplaints]
+      .map((id) => complaints.find((c) => c.id === id)?.label || "")
+      .join(", ")
     const details = generalDetails || "Sem detalhes adicionais"
 
     fetch("/api/notify", {
@@ -532,7 +558,7 @@ export default function HarmonizacaoFunnel() {
         name: userName,
         phone: userPhone,
         unit: userUnit,
-        complaint: `[Harmonização] ${complaintLabel}`,
+        complaint: `[Harmonização] ${complaintLabels}`,
         details,
       }),
     }).catch(() => {})
@@ -550,11 +576,16 @@ export default function HarmonizacaoFunnel() {
   }
 
   const handleWhatsAppRedirect = () => {
-    if (!selectedComplaint) return
     track("Contact", { content_name: "WhatsApp Harmonização" })
-    const service = services[selectedComplaint]
+    const service = getRecommendedService()
     const unitInfo = userUnit ? ` Prefiro ser atendida na unidade de ${userUnit}.` : ""
-    const message = `Olá! Meu nome é ${userName}. Tenho interesse em **${service.title}** na Natuclinic.${unitInfo} Gostaria de agendar uma avaliação!`
+    const complaintLabels = [...selectedComplaints]
+      .map((id) => complaints.find((c) => c.id === id)?.label || "")
+      .filter(Boolean)
+    const complaintText = complaintLabels.length > 0
+      ? ` Minhas principais preocupações são: ${complaintLabels.join(", ")}.`
+      : ""
+    const message = `Olá! Meu nome é ${userName}. Tenho interesse em ${service.title} na Natuclinic.${complaintText}${unitInfo} Gostaria de agendar uma avaliação!`
     window.open(`https://wa.me/5561992551867?text=${encodeURIComponent(message)}`, "_blank")
   }
 
@@ -831,17 +862,45 @@ export default function HarmonizacaoFunnel() {
               {/* Complaint selection */}
               {chatPhase === "complaint-selection" && (
                 <div className="space-y-2 animate-fade-in pt-2">
-                  {complaints.map((c) => (
+                  <p className="text-xs text-muted-foreground text-center pb-1">Pode selecionar mais de uma</p>
+                  {complaints.map((c) => {
+                    const active = selectedComplaints.has(c.id)
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => toggleComplaint(c.id)}
+                        disabled={isPlayingAudio}
+                        className={`w-full backdrop-blur-sm border-2 rounded-xl p-4 flex items-center gap-4 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 ${
+                          active
+                            ? "bg-[#4A3328]/10 border-[#4A3328]"
+                            : "bg-card/90 border-border hover:border-[#4A3328]/40"
+                        }`}
+                      >
+                        <span className="text-2xl">{c.icon}</span>
+                        <span className="text-left flex-1 font-medium text-sm">{c.label}</span>
+                        <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          active ? "bg-[#4A3328] border-[#4A3328]" : "border-border"
+                        }`}>
+                          {active && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </span>
+                      </button>
+                    )
+                  })}
+                  {selectedComplaints.size > 0 && (
                     <button
-                      key={c.id}
-                      onClick={() => handleComplaintSelect(c.id)}
-                      disabled={isPlayingAudio}
-                      className="w-full bg-card/90 backdrop-blur-sm border-2 border-border hover:border-primary/50 rounded-xl p-4 flex items-center gap-4 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                      onClick={handleComplaintsConfirm}
+                      className="w-full bg-[#4A3328] text-white rounded-xl p-4 font-medium text-sm transition-all hover:bg-[#3a271f] active:scale-[0.98] flex items-center justify-center gap-2 mt-1"
                     >
-                      <span className="text-2xl">{c.icon}</span>
-                      <span className="text-left flex-1 font-medium text-sm">{c.label}</span>
+                      Confirmar seleção
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 -rotate-45">
+                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                      </svg>
                     </button>
-                  ))}
+                  )}
                 </div>
               )}
 
@@ -878,26 +937,29 @@ export default function HarmonizacaoFunnel() {
               )}
 
               {/* Service card */}
-              {chatPhase === "service" && selectedComplaint && (
-                <div className="space-y-3 animate-fade-in">
-                  <div className="bg-card/90 backdrop-blur-sm border-2 border-[#4A3328]/30 rounded-xl p-5 space-y-3">
-                    <div className="flex items-start gap-3">
-                      <span className="text-3xl">✨</span>
-                      <div>
-                        <h3 className="font-semibold text-base">{services[selectedComplaint].title}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">{services[selectedComplaint].description}</p>
+              {chatPhase === "service" && selectedComplaints.size > 0 && (() => {
+                const svc = getRecommendedService()
+                return (
+                  <div className="space-y-3 animate-fade-in">
+                    <div className="bg-card/90 backdrop-blur-sm border-2 border-[#4A3328]/30 rounded-xl p-5 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <span className="text-3xl">✨</span>
+                        <div>
+                          <h3 className="font-semibold text-base">{svc.title}</h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">{svc.description}</p>
+                        </div>
                       </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{svc.longDescription}</p>
+                      <Button
+                        onClick={handleWhatsAppRedirect}
+                        className="w-full bg-[#25D366] hover:bg-[#20BA5A] text-white"
+                      >
+                        Agendar minha avaliação 💬
+                      </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{services[selectedComplaint].longDescription}</p>
-                    <Button
-                      onClick={handleWhatsAppRedirect}
-                      className="w-full bg-[#25D366] hover:bg-[#20BA5A] text-white"
-                    >
-                      Agendar minha avaliação 💬
-                    </Button>
                   </div>
-                </div>
-              )}
+                )
+              })()}
 
               {/* WhatsApp card */}
               {chatPhase === "whatsapp" && (
