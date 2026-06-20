@@ -862,7 +862,7 @@ export default function NatuclinicFunnel() {
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                           message.type === "user"
-                            ? "bg-primary text-primary-foreground rounded-br-none"
+                            ? "bg-[#4A3328] text-white rounded-br-none"
                             : "bg-card/90 backdrop-blur-sm border border-border rounded-bl-none"
                         }`}
                       >
