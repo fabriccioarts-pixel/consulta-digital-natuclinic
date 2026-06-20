@@ -766,7 +766,7 @@ export default function NatuclinicFunnel() {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="relative w-full max-w-[430px] h-screen md:h-screen overflow-hidden flex flex-col md:shadow-2xl">
+      <div className="relative w-full max-w-[430px] h-dvh overflow-hidden flex flex-col md:shadow-2xl">
           <div className="relative z-10 flex flex-col h-full">
             <div className="bg-[#4A3328] text-white shadow-sm border-b border-[#3a271f] p-4">
               <div className="flex items-center justify-between">
@@ -793,7 +793,7 @@ export default function NatuclinicFunnel() {
             <div
               ref={chatContainerRef}
               className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-              style={{ background: "transparent" }}
+              style={{ background: "transparent", touchAction: "pan-y", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
             >
               {/* Wallpaper sticky — fica fixo enquanto mensagens rolam */}
               <img
@@ -991,7 +991,7 @@ export default function NatuclinicFunnel() {
                         value={userName}
                         onChange={(e) => setUserName(e.target.value)}
                         placeholder="Seu nome..."
-                        className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3328]"
+                        className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#4A3328]"
                         autoFocus
                       />
                       <button
@@ -1014,7 +1014,7 @@ export default function NatuclinicFunnel() {
                         value={userPhone}
                         onChange={(e) => setUserPhone(formatPhone(e.target.value))}
                         placeholder="(61) 99999-9999"
-                        className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3328]"
+                        className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-[#4A3328]"
                         autoFocus
                       />
                       <button
