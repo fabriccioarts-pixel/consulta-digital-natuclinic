@@ -197,24 +197,29 @@ export default function NatuclinicFunnel() {
 
   }
 
-  const handleVideoContinue = () => {
-    addUserMessage("Continuar")
+  const handleVideoEnded = () => {
     setChatPhase("pre-qualify")
 
     setTimeout(() => {
       addDoctorMessage(
         "Nosso espaço foi projetado para proporcionar uma experiência estética premium, com **conforto, tranquilidade e atenção aos detalhes**.",
-        undefined, 800,
+        undefined, 1200,
       )
+      setTimeout(() => setChatPhase("video-ended"), 1200 + 300 + 1000)
+    }, 800)
+  }
+
+  const handleVideoContinue = () => {
+    addUserMessage("Continuar")
+    setChatPhase("pre-qualify")
+
+    setTimeout(() => {
+      addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de cuidados com a pele", undefined, 900)
     }, 800)
 
     setTimeout(() => {
-      addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de cuidados com a pele", undefined, 600)
-    }, 3800)
-
-    setTimeout(() => {
-      addDoctorMessage("Tudo pensado para transformar esse momento em uma **experiência única de autocuidado**.", undefined, 700)
-    }, 6800)
+      addDoctorMessage("Tudo pensado para transformar esse momento em uma **experiência única de autocuidado**.", undefined, 1000)
+    }, 4000)
 
     setTimeout(() => {
       addPhotoGallery([
@@ -226,26 +231,26 @@ export default function NatuclinicFunnel() {
         "/fotos-clinica/unnamed (4).webp",
         "/fotos-clinica/unnamed (5).webp",
       ])
-    }, 9300)
+    }, 7200)
 
     setTimeout(() => {
       addDoctorMessage(
         "✨ Nossa Limpeza de Pele ✨\n\nUm protocolo completo para limpar, renovar e cuidar profundamente da sua pele 💆🏻‍♀️\n\n✔️ Higienização da pele\n✔️ Esfoliação\n✔️ Peeling de Diamante\n✔️ Emoliência\n✔️ Vapor de ozônio\n✔️ Extração de cravos e impurezas\n✔️ Placa ultrassônica\n✔️ Aplicação de tônicos\n✔️ Alta frequência\n✔️ Água termal\n✔️ Hidratação\n✔️ Spa labial\n✔️ Finalização com protetor solar ☀️",
-        undefined, 900,
+        undefined, 1200,
       )
-    }, 11300)
+    }, 9500)
 
     setTimeout(() => {
       addDoctorMessage(
         "Uma experiência relaxante com cuidados que deixam sua pele mais saudável, iluminada e renovada ✨\n\n💰 Investimento: **R$179,90**\n💳 PIX ou cartão",
-        undefined, 700,
+        undefined, 900,
       )
-    }, 14800)
+    }, 13500)
 
     setTimeout(() => {
-      addDoctorMessage("Se esse é o seu perfil, **vamos continuar**.", undefined, 500)
-      setTimeout(() => setChatPhase("pre-qualify-cta"), 1500)
-    }, 17800)
+      addDoctorMessage("Se esse é o seu perfil, **vamos continuar**.", undefined, 800)
+      setTimeout(() => setChatPhase("pre-qualify-cta"), 1800)
+    }, 17000)
   }
 
   const handlePreQualifyCta = () => {
@@ -828,7 +833,7 @@ export default function NatuclinicFunnel() {
                             playsInline
                             controls
                             className="w-full max-h-[320px] object-cover"
-                            onEnded={() => setChatPhase("video-ended")}
+                            onEnded={handleVideoEnded}
                           />
                         </div>
                       </div>
