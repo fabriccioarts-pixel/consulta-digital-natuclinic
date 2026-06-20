@@ -140,6 +140,7 @@ export default function NatuclinicFunnel() {
   const audioQueueRef = useRef<{ url: string; onEnd?: () => void }[]>([])
   const audioUnlockedRef = useRef(false)
   const userHasInteracted = useRef(false)
+  const nextMsgAtRef = useRef(0) // epoch ms when next message slot is free
 
   useEffect(() => {
     if (userHasInteracted.current && chatContainerRef.current) {
@@ -150,6 +151,7 @@ export default function NatuclinicFunnel() {
   useEffect(() => {
     playBackgroundMusic()
     setChatPhase("intro")
+    nextMsgAtRef.current = 0
 
     addDoctorMessage("✨ Bem-vinda à Natuclinic", undefined, 400)
 
@@ -158,19 +160,10 @@ export default function NatuclinicFunnel() {
         "Na Natuclinic, criamos uma experiência de estética voltada para mulheres que valorizam **cuidado premium, conforto e resultados superiores**.",
         undefined, 1800,
       )
+      addDoctorMessage("Não somos uma clínica popular.", undefined, 1500)
+      addDoctorMessage("Nosso atendimento é pensado para quem busca **qualidade acima da média**.", undefined, 1600)
+      scheduleAction(() => setChatPhase("intro-cta"))
     }, 1500)
-
-    setTimeout(() => {
-      addDoctorMessage("Não somos uma clínica popular.", undefined, 600)
-    }, 3200)
-
-    setTimeout(() => {
-      addDoctorMessage("Nosso atendimento é pensado para quem busca **qualidade acima da média**.", undefined, 700)
-    }, 4800)
-
-    setTimeout(() => {
-      setChatPhase("intro-cta")
-    }, 6500)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -179,31 +172,25 @@ export default function NatuclinicFunnel() {
     trackCustom("FunnelStart")
     addUserMessage("Quero entender como funciona")
     setChatPhase("pre-qualify")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage(
         "Antes de te mostrar os detalhes, preciso entender se a **Natuclinic é realmente o que você procura**.",
         undefined, 1800,
       )
-    }, 800)
-
-    setTimeout(() => {
       addDoctorMessage("Esse atendimento costuma atrair mulheres que valorizam:", undefined, 1500)
-      setTimeout(() => {
-        addListCard(["exclusividade", "experiência diferenciada", "protocolos personalizados", "ambiente sofisticado"])
-        setTimeout(() => addVideoMessage("/ambiente.mp4"), 400)
-      }, 1500)
-    }, 3500)
-
-    // Mensagem e botão aparecem 4s após o vídeo ser enviado, sem esperar terminar
-    setTimeout(() => {
-      addDoctorMessage(
-        "Nosso espaço foi projetado para proporcionar uma experiência estética premium, com **conforto, tranquilidade e atenção aos detalhes**.",
-        undefined, 2500,
-      )
-      setTimeout(() => setChatPhase("video-ended"), 300 + 1200 + 800)
-    }, 3500 + 1500 + 400 + 4000)
-
+      addListCard(["exclusividade", "experiência diferenciada", "protocolos personalizados", "ambiente sofisticado"])
+      addVideoMessage("/ambiente.mp4")
+      // 4s after video appears, continue automatically
+      scheduleAction(() => {
+        addDoctorMessage(
+          "Nosso espaço foi projetado para proporcionar uma experiência estética premium, com **conforto, tranquilidade e atenção aos detalhes**.",
+          undefined, 2500,
+        )
+        scheduleAction(() => setChatPhase("video-ended"))
+      }, 4000)
+    }, 800)
   }
 
   const handleVideoEnded = () => {}
@@ -211,16 +198,11 @@ export default function NatuclinicFunnel() {
   const handleVideoContinue = () => {
     addUserMessage("Continuar")
     setChatPhase("pre-qualify")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
-      addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de cuidados com a pele", undefined, 900)
-    }, 800)
-
-    setTimeout(() => {
-      addDoctorMessage("Tudo pensado para transformar esse momento em uma **experiência única de autocuidado**.", undefined, 1000)
-    }, 4000)
-
-    setTimeout(() => {
+      addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de cuidados com a pele", undefined, 1800)
+      addDoctorMessage("Tudo pensado para transformar esse momento em uma **experiência única de autocuidado**.", undefined, 1800)
       addPhotoGallery([
         "/fotos-clinica/unnamed.webp",
         "/fotos-clinica/unnamed 1.webp",
@@ -230,39 +212,29 @@ export default function NatuclinicFunnel() {
         "/fotos-clinica/unnamed (4).webp",
         "/fotos-clinica/unnamed (5).webp",
       ])
-    }, 7200)
-
-    setTimeout(() => {
       addDoctorMessage(
         "✨ Nossa Limpeza de Pele ✨\n\nUm protocolo completo para limpar, renovar e cuidar profundamente da sua pele 💆🏻‍♀️\n\n✔️ Higienização da pele\n✔️ Esfoliação\n✔️ Peeling de Diamante\n✔️ Emoliência\n✔️ Vapor de ozônio\n✔️ Extração de cravos e impurezas\n✔️ Placa ultrassônica\n✔️ Aplicação de tônicos\n✔️ Alta frequência\n✔️ Água termal\n✔️ Hidratação\n✔️ Spa labial\n✔️ Finalização com protetor solar ☀️",
         undefined, 2500,
       )
-    }, 9500)
-
-    setTimeout(() => {
       addDoctorMessage(
         "Uma experiência relaxante com cuidados que deixam sua pele mais saudável, iluminada e renovada ✨\n\n💰 Investimento: **R$179,90**\n💳 PIX ou cartão",
         undefined, 2000,
       )
-    }, 13500)
-
-    setTimeout(() => {
       addDoctorMessage("Se esse é o seu perfil, **vamos continuar**.", undefined, 1800)
-      setTimeout(() => setChatPhase("pre-qualify-cta"), 1800)
-    }, 17000)
+      scheduleAction(() => setChatPhase("pre-qualify-cta"))
+    }, 800)
   }
 
   const handlePreQualifyCta = () => {
     unlockAudio()
     addUserMessage("Continuar")
     setChatPhase("name-question")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage("Ótimo! Vamos começar sua avaliação personalizada.")
-      setTimeout(() => {
-        addDoctorMessage("Antes de tudo, como você gostaria de ser chamada?")
-        setTimeout(() => setChatPhase("name-input"), 1500)
-      }, 2000)
+      addDoctorMessage("Antes de tudo, como você gostaria de ser chamada?")
+      scheduleAction(() => setChatPhase("name-input"))
     }, 800)
   }
 
@@ -398,10 +370,15 @@ export default function NatuclinicFunnel() {
     sfx.play().catch(() => {})
   }
 
+  // Schedule a doctor message sequentially — waits for the previous message to finish before typing
   const addDoctorMessage = (content: string, audioUrl?: string, delay = 1800) => {
+    const now = Date.now()
+    const startAt = Math.max(now, nextMsgAtRef.current)
+    nextMsgAtRef.current = startAt + delay + 500
+    const waitMs = Math.max(0, startAt - now)
+
     setTimeout(() => {
       setIsTyping(true)
-
       setTimeout(() => {
         const newMessage: ChatMessage = {
           id: Date.now().toString(),
@@ -410,16 +387,19 @@ export default function NatuclinicFunnel() {
           audioUrl,
           timestamp: new Date(),
         }
-
         setMessages((prev) => [...prev, newMessage])
         playReceiveSound()
         setIsTyping(false)
-
-        if (audioUrl) {
-          playAudio(audioUrl)
-        }
+        if (audioUrl) playAudio(audioUrl)
       }, delay)
-    }, 300)
+    }, waitMs)
+  }
+
+  // Fire a callback after the current message queue finishes
+  const scheduleAction = (fn: () => void, extraMs = 500) => {
+    const now = Date.now()
+    const at = Math.max(now, nextMsgAtRef.current) + extraMs
+    setTimeout(fn, Math.max(0, at - now))
   }
 
   const addUserMessage = (content: string) => {
@@ -437,33 +417,48 @@ export default function NatuclinicFunnel() {
   }
 
   const addListCard = (items: string[]) => {
-    setMessages((prev) => [...prev, {
-      id: Date.now().toString(),
-      type: "list-card",
-      content: "",
-      items,
-      timestamp: new Date(),
-    }])
+    const now = Date.now()
+    const startAt = Math.max(now, nextMsgAtRef.current)
+    nextMsgAtRef.current = startAt + 500
+    setTimeout(() => {
+      setMessages((prev) => [...prev, {
+        id: Date.now().toString(),
+        type: "list-card",
+        content: "",
+        items,
+        timestamp: new Date(),
+      }])
+    }, Math.max(0, startAt - now))
   }
 
   const addVideoMessage = (src: string) => {
-    setMessages((prev) => [...prev, {
-      id: (Date.now() + 1).toString(),
-      type: "video",
-      content: "",
-      videoSrc: src,
-      timestamp: new Date(),
-    }])
+    const now = Date.now()
+    const startAt = Math.max(now, nextMsgAtRef.current)
+    nextMsgAtRef.current = startAt + 600
+    setTimeout(() => {
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 1).toString(),
+        type: "video",
+        content: "",
+        videoSrc: src,
+        timestamp: new Date(),
+      }])
+    }, Math.max(0, startAt - now))
   }
 
   const addPhotoGallery = (images: string[]) => {
-    setMessages((prev) => [...prev, {
-      id: (Date.now() + 2).toString(),
-      type: "photo-gallery",
-      content: "",
-      images,
-      timestamp: new Date(),
-    }])
+    const now = Date.now()
+    const startAt = Math.max(now, nextMsgAtRef.current)
+    nextMsgAtRef.current = startAt + 600
+    setTimeout(() => {
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 2).toString(),
+        type: "photo-gallery",
+        content: "",
+        images,
+        timestamp: new Date(),
+      }])
+    }, Math.max(0, startAt - now))
   }
 
   const handleNameSubmit = (e: React.FormEvent) => {
@@ -473,15 +468,12 @@ export default function NatuclinicFunnel() {
 
     addUserMessage(userName)
     setChatPhase("phone-question")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage(`Muito prazer, ${userName}!`)
-      setTimeout(() => {
-        addDoctorMessage("Agora me conta, qual o seu melhor WhatsApp para eu te enviar os detalhes do seu plano?")
-        setTimeout(() => {
-          setChatPhase("phone-input")
-        }, 1500)
-      }, 1500)
+      addDoctorMessage("Agora me conta, qual o seu melhor WhatsApp para eu te enviar os detalhes do seu plano?")
+      scheduleAction(() => setChatPhase("phone-input"))
     }, 1000)
   }
 
@@ -491,18 +483,12 @@ export default function NatuclinicFunnel() {
     if (userPhone.replace(/\D/g, "").length < 10 || isPlayingAudio) return
 
     addUserMessage(userPhone)
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage("Obrigada! Já salvei aqui.")
-
-      setTimeout(() => {
-        addDoctorMessage(
-          "Antes de continuar, você é do Distrito Federal ou região?",
-        )
-        setTimeout(() => {
-          setChatPhase("qualifying-location")
-        }, 2000)
-      }, 2000)
+      addDoctorMessage("Antes de continuar, você é do Distrito Federal ou região?")
+      scheduleAction(() => setChatPhase("qualifying-location"))
     }, 1000)
   }
 
@@ -512,27 +498,25 @@ export default function NatuclinicFunnel() {
     if (!unit) {
       addUserMessage("Não sou da região")
       setChatPhase("disqualified")
+      nextMsgAtRef.current = 0
       setTimeout(() => {
         addDoctorMessage(
           "Entendo! No momento atendemos presencialmente no Distrito Federal — Taguatinga e Planaltina.",
         )
-        setTimeout(() => {
-          addDoctorMessage(
-            "Mas fico muito feliz com o seu interesse! Quando vier à nossa região, ficaremos felizes em te receber. Até breve! 💕",
-          )
-        }, 2500)
+        addDoctorMessage(
+          "Mas fico muito feliz com o seu interesse! Quando vier à nossa região, ficaremos felizes em te receber. Até breve! 💕",
+        )
       }, 1000)
       return
     }
 
     setUserUnit(unit)
     addUserMessage(unit)
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage("Que ótimo! Você tem disponibilidade para realizar o procedimento nos próximos 15 dias?")
-      setTimeout(() => {
-        setChatPhase("qualifying-availability")
-      }, 2000)
+      scheduleAction(() => setChatPhase("qualifying-availability"))
     }, 1000)
   }
 
@@ -542,34 +526,30 @@ export default function NatuclinicFunnel() {
     if (!isAvailable) {
       addUserMessage("Não tenho disponibilidade agora")
       setChatPhase("disqualified")
+      nextMsgAtRef.current = 0
       setTimeout(() => {
         addDoctorMessage(
           "Sem problema! Entendo que a agenda pode estar corrida. Por ora, não consigo garantir uma vaga especial para você.",
         )
-        setTimeout(() => {
-          addDoctorMessage(
-            "Quando sentir que é o momento certo, pode retornar por aqui ou entrar em contato pelo nosso WhatsApp. Cuide-se! 🌸",
-          )
-        }, 2500)
+        addDoctorMessage(
+          "Quando sentir que é o momento certo, pode retornar por aqui ou entrar em contato pelo nosso WhatsApp. Cuide-se! 🌸",
+        )
       }, 1000)
       return
     }
 
     addUserMessage("Sim, tenho disponibilidade nos próximos 15 dias")
     setChatPhase("complaint-question")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage("Perfeito! Então vamos montar o seu plano de cuidados.")
-      setTimeout(() => {
-        addDoctorMessage(
-          "O que você sente que precisa de mais atenção na sua pele agora?",
-          "/oque-mais-incomoda.mp3",
-          2000,
-        )
-        setTimeout(() => {
-          setChatPhase("complaint-selection")
-        }, 3000)
-      }, 2000)
+      addDoctorMessage(
+        "O que você sente que precisa de mais atenção na sua pele agora?",
+        "/oque-mais-incomoda.mp3",
+        2000,
+      )
+      scheduleAction(() => setChatPhase("complaint-selection"))
     }, 1000)
   }
 
@@ -596,21 +576,14 @@ export default function NatuclinicFunnel() {
     addUserMessage(complaintLabel)
     setChatPhase("detail-question")
 
+    nextMsgAtRef.current = 0
     setTimeout(() => {
       addDoctorMessage("Perfeito! Estou anotando aqui...", "/perfeito-estou-anotando.mp3")
-
-      setTimeout(() => {
-        addDoctorMessage(
-          "Agora preciso de alguns detalhes para te orientar melhor. Pode responder com calma.",
-          "/detalhes.mp3",
-        )
-
-        setTimeout(() => {
-          if (!isPlayingAudio) {
-            setChatPhase("detail-form")
-          }
-        }, complaint === "outro" ? 2000 : 6000)
-      }, 3000)
+      addDoctorMessage(
+        "Agora preciso de alguns detalhes para te orientar melhor. Pode responder com calma.",
+        "/detalhes.mp3",
+      )
+      scheduleAction(() => { if (!isPlayingAudio) setChatPhase("detail-form") })
     }, 1500)
   }
 
@@ -650,19 +623,14 @@ export default function NatuclinicFunnel() {
     addUserMessage(detailSummary)
 
     setChatPhase("analyzing")
+    nextMsgAtRef.current = 0
     setTimeout(() => {
       addDoctorMessage(
         "Obrigada! Com isso consigo te orientar melhor.",
         "/obrigada-com-isso-consigo-te-orientar-melhor.mp3",
       )
-
-      setTimeout(() => {
-        addDoctorMessage("Deixa eu analisar tudo que você me contou...")
-
-        setTimeout(() => {
-          setChatPhase("service")
-        }, 3000)
-      }, 2500)
+      addDoctorMessage("Deixa eu analisar tudo que você me contou...")
+      scheduleAction(() => setChatPhase("service"))
     }, 1500)
   }
 
@@ -686,18 +654,21 @@ export default function NatuclinicFunnel() {
         .then((data) => {
           if (data.dates?.length > 0) {
             setAvailableDates(data.dates)
+            nextMsgAtRef.current = 0
             setTimeout(() => {
               addDoctorMessage("Esses são os dias disponíveis para a sua Limpeza de Pele — escolha o melhor para você:")
-              setChatPhase("picking-date")
+              scheduleAction(() => setChatPhase("picking-date"))
             }, 1500)
           } else {
+            nextMsgAtRef.current = 0
             addDoctorMessage("Vou te encaminhar para o WhatsApp para finalizarmos o agendamento por lá.")
-            setTimeout(() => setChatPhase("whatsapp"), 1500)
+            scheduleAction(() => setChatPhase("whatsapp"))
           }
         })
         .catch(() => {
+          nextMsgAtRef.current = 0
           addDoctorMessage("Vou te encaminhar para o WhatsApp para finalizarmos o agendamento por lá.")
-          setTimeout(() => setChatPhase("whatsapp"), 1500)
+          scheduleAction(() => setChatPhase("whatsapp"))
         })
     }, 500)
   }
@@ -706,9 +677,10 @@ export default function NatuclinicFunnel() {
     const label = formatDateDisplay(dateData.date)
     addUserMessage(label)
     setSelectedDateData(dateData)
+    nextMsgAtRef.current = 0
     setTimeout(() => {
       addDoctorMessage(`Ótimo! Para ${label}, esses são os horários disponíveis:`)
-      setChatPhase("picking-time")
+      scheduleAction(() => setChatPhase("picking-time"))
     }, 800)
   }
 
@@ -733,20 +705,23 @@ export default function NatuclinicFunnel() {
       .then((data) => {
         if (data.success) {
           setBookedInfo({ date: selectedDateData!.date, start: slot.start })
+          nextMsgAtRef.current = 0
           setTimeout(() => {
             addDoctorMessage(
               `Tudo certo, ${userName}! 🎉 Sua Limpeza de Pele está confirmada para **${formatDateDisplay(selectedDateData!.date)}** às **${slot.start}**.\n\nAguardamos você com muito carinho! 💕`,
             )
-            setChatPhase("booked")
+            scheduleAction(() => setChatPhase("booked"))
           }, 1000)
         } else {
+          nextMsgAtRef.current = 0
           addDoctorMessage("Não consegui confirmar automaticamente, mas vou te encaminhar para o WhatsApp agora!")
-          setTimeout(() => setChatPhase("whatsapp"), 1500)
+          scheduleAction(() => setChatPhase("whatsapp"))
         }
       })
       .catch(() => {
+        nextMsgAtRef.current = 0
         addDoctorMessage("Não consegui confirmar automaticamente, mas vou te encaminhar para o WhatsApp agora!")
-        setTimeout(() => setChatPhase("whatsapp"), 1500)
+        scheduleAction(() => setChatPhase("whatsapp"))
       })
   }
 

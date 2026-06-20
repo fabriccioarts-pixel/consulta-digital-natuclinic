@@ -118,6 +118,7 @@ export default function HarmonizacaoFunnel() {
   const audioQueueRef = useRef<{ url: string; onEnd?: () => void }[]>([])
   const audioUnlockedRef = useRef(false)
   const userHasInteracted = useRef(false)
+  const nextMsgAtRef = useRef(0) // epoch ms when next message slot is free
 
   useEffect(() => {
     if (userHasInteracted.current && chatContainerRef.current) {
@@ -128,6 +129,7 @@ export default function HarmonizacaoFunnel() {
   useEffect(() => {
     playBackgroundMusic()
     setChatPhase("intro")
+    nextMsgAtRef.current = 0
 
     addDoctorMessage("✨ Bem-vinda à Natuclinic", undefined, 400)
 
@@ -136,19 +138,10 @@ export default function HarmonizacaoFunnel() {
         "Na Natuclinic, realizamos procedimentos de **harmonização facial** com foco em resultados naturais, seguros e personalizados.",
         undefined, 1800,
       )
+      addDoctorMessage("Não trabalhamos com resultados exagerados.", undefined, 1500)
+      addDoctorMessage("Nossa proposta é **realçar sua beleza natural** — com técnica, cuidado e experiência.", undefined, 1600)
+      scheduleAction(() => setChatPhase("intro-cta"))
     }, 1500)
-
-    setTimeout(() => {
-      addDoctorMessage("Não trabalhamos com resultados exagerados.", undefined, 600)
-    }, 3200)
-
-    setTimeout(() => {
-      addDoctorMessage("Nossa proposta é **realçar sua beleza natural** — com técnica, cuidado e experiência.", undefined, 700)
-    }, 4800)
-
-    setTimeout(() => {
-      setChatPhase("intro-cta")
-    }, 6500)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -274,7 +267,13 @@ export default function HarmonizacaoFunnel() {
     sfx.play().catch(() => {})
   }
 
+  // Schedule a doctor message sequentially — waits for the previous message to finish before typing
   const addDoctorMessage = (content: string, audioUrl?: string, delay = 1800) => {
+    const now = Date.now()
+    const startAt = Math.max(now, nextMsgAtRef.current)
+    nextMsgAtRef.current = startAt + delay + 500
+    const waitMs = Math.max(0, startAt - now)
+
     setTimeout(() => {
       setIsTyping(true)
       setTimeout(() => {
@@ -290,7 +289,14 @@ export default function HarmonizacaoFunnel() {
         setIsTyping(false)
         if (audioUrl) playAudio(audioUrl)
       }, delay)
-    }, 300)
+    }, waitMs)
+  }
+
+  // Fire a callback after the current message queue finishes
+  const scheduleAction = (fn: () => void, extraMs = 500) => {
+    const now = Date.now()
+    const at = Math.max(now, nextMsgAtRef.current) + extraMs
+    setTimeout(fn, Math.max(0, at - now))
   }
 
   const addUserMessage = (content: string) => {
@@ -306,33 +312,48 @@ export default function HarmonizacaoFunnel() {
   }
 
   const addListCard = (items: string[]) => {
-    setMessages((prev) => [...prev, {
-      id: Date.now().toString(),
-      type: "list-card",
-      content: "",
-      items,
-      timestamp: new Date(),
-    }])
+    const now = Date.now()
+    const startAt = Math.max(now, nextMsgAtRef.current)
+    nextMsgAtRef.current = startAt + 500
+    setTimeout(() => {
+      setMessages((prev) => [...prev, {
+        id: Date.now().toString(),
+        type: "list-card",
+        content: "",
+        items,
+        timestamp: new Date(),
+      }])
+    }, Math.max(0, startAt - now))
   }
 
   const addVideoMessage = (src: string) => {
-    setMessages((prev) => [...prev, {
-      id: (Date.now() + 1).toString(),
-      type: "video",
-      content: "",
-      videoSrc: src,
-      timestamp: new Date(),
-    }])
+    const now = Date.now()
+    const startAt = Math.max(now, nextMsgAtRef.current)
+    nextMsgAtRef.current = startAt + 600
+    setTimeout(() => {
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 1).toString(),
+        type: "video",
+        content: "",
+        videoSrc: src,
+        timestamp: new Date(),
+      }])
+    }, Math.max(0, startAt - now))
   }
 
   const addPhotoGallery = (images: string[]) => {
-    setMessages((prev) => [...prev, {
-      id: (Date.now() + 2).toString(),
-      type: "photo-gallery",
-      content: "",
-      images,
-      timestamp: new Date(),
-    }])
+    const now = Date.now()
+    const startAt = Math.max(now, nextMsgAtRef.current)
+    nextMsgAtRef.current = startAt + 600
+    setTimeout(() => {
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 2).toString(),
+        type: "photo-gallery",
+        content: "",
+        images,
+        timestamp: new Date(),
+      }])
+    }, Math.max(0, startAt - now))
   }
 
   const handleIntroCta = () => {
@@ -340,34 +361,25 @@ export default function HarmonizacaoFunnel() {
     trackCustom("HarmonizacaoFunnelStart")
     addUserMessage("Quero saber mais")
     setChatPhase("pre-qualify")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage(
         "Antes de te mostrar os detalhes, preciso entender se a **Natuclinic é realmente o que você procura**.",
         undefined, 2500,
       )
-    }, 1000)
-
-    setTimeout(() => {
-      addDoctorMessage("Nossos atendimentos costumam atrair mulheres que valorizam:", undefined, 1000)
-    }, 4500)
-
-    setTimeout(() => {
+      addDoctorMessage("Nossos atendimentos costumam atrair mulheres que valorizam:", undefined, 1500)
       addListCard(["resultado natural", "técnica avançada", "ambiente premium", "atendimento personalizado"])
-    }, 7000)
-
-    setTimeout(() => {
       addVideoMessage("/ambiente.mp4")
-    }, 7800)
-
-    // Mensagem e botão aparecem 4s após o vídeo ser enviado, sem esperar terminar
-    setTimeout(() => {
-      addDoctorMessage(
-        "Nosso espaço foi pensado para você se sentir segura, confortável e bem cuidada durante todo o procedimento.",
-        undefined, 2500,
-      )
-      setTimeout(() => setChatPhase("video-ended"), 300 + 1400 + 800)
-    }, 7800 + 4000)
+      // 4s after video appears, continue automatically
+      scheduleAction(() => {
+        addDoctorMessage(
+          "Nosso espaço foi pensado para você se sentir segura, confortável e bem cuidada durante todo o procedimento.",
+          undefined, 2500,
+        )
+        scheduleAction(() => setChatPhase("video-ended"))
+      }, 4000)
+    }, 1000)
   }
 
   const handleVideoEnded = () => {}
@@ -375,16 +387,11 @@ export default function HarmonizacaoFunnel() {
   const handleVideoContinue = () => {
     addUserMessage("Continuar")
     setChatPhase("pre-qualify")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
-      addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de harmonização", undefined, 1000)
-    }, 800)
-
-    setTimeout(() => {
-      addDoctorMessage("Tudo pensado para que você saia se sentindo **mais bonita e confiante**.", undefined, 1200)
-    }, 8500)
-
-    setTimeout(() => {
+      addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de harmonização", undefined, 1800)
+      addDoctorMessage("Tudo pensado para que você saia se sentindo **mais bonita e confiante**.", undefined, 1800)
       addPhotoGallery([
         "/fotos-clinica/unnamed.webp",
         "/fotos-clinica/unnamed 1.webp",
@@ -394,32 +401,25 @@ export default function HarmonizacaoFunnel() {
         "/fotos-clinica/unnamed (4).webp",
         "/fotos-clinica/unnamed (5).webp",
       ])
-    }, 12000)
-
-    setTimeout(() => {
       addDoctorMessage(
         "✨ Nossos procedimentos de Harmonização Facial ✨\n\n✔️ Toxina Botulínica (Botox)\n✔️ Preenchimento Labial\n✔️ Preenchimento Facial\n✔️ Rinomodelação\n✔️ Bioestimuladores de Colágeno\n✔️ Fios de PDO\n✔️ Skinbooster\n\nTodos realizados com produtos de alta qualidade e técnica personalizada para o seu rosto.",
         undefined, 2800,
       )
-    }, 14500)
-
-    setTimeout(() => {
-      addDoctorMessage("Se esse é o seu perfil, **vamos continuar**.", undefined, 1000)
-      setTimeout(() => setChatPhase("pre-qualify-cta"), 2000)
-    }, 19000)
+      addDoctorMessage("Se esse é o seu perfil, **vamos continuar**.", undefined, 1800)
+      scheduleAction(() => setChatPhase("pre-qualify-cta"))
+    }, 800)
   }
 
   const handlePreQualifyCta = () => {
     unlockAudio()
     addUserMessage("Continuar")
     setChatPhase("name-question")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage("Ótimo! Vamos começar sua avaliação personalizada.")
-      setTimeout(() => {
-        addDoctorMessage("Antes de tudo, como você gostaria de ser chamada?")
-        setTimeout(() => setChatPhase("name-input"), 1500)
-      }, 2000)
+      addDoctorMessage("Antes de tudo, como você gostaria de ser chamada?")
+      scheduleAction(() => setChatPhase("name-input"))
     }, 800)
   }
 
@@ -442,12 +442,11 @@ export default function HarmonizacaoFunnel() {
     if (!userName.trim() || isPlayingAudio) return
     addUserMessage(userName)
     setChatPhase("phone-question")
+    nextMsgAtRef.current = 0
     setTimeout(() => {
       addDoctorMessage(`Muito prazer, ${userName}!`)
-      setTimeout(() => {
-        addDoctorMessage("Qual o seu melhor WhatsApp para eu te enviar os detalhes?")
-        setTimeout(() => setChatPhase("phone-input"), 1500)
-      }, 1500)
+      addDoctorMessage("Qual o seu melhor WhatsApp para eu te enviar os detalhes?")
+      scheduleAction(() => setChatPhase("phone-input"))
     }, 1000)
   }
 
@@ -456,12 +455,11 @@ export default function HarmonizacaoFunnel() {
     track("Lead", { content_name: "Natuclinic Harmonização Facial" })
     if (userPhone.replace(/\D/g, "").length < 10 || isPlayingAudio) return
     addUserMessage(userPhone)
+    nextMsgAtRef.current = 0
     setTimeout(() => {
       addDoctorMessage("Obrigada! Já salvei aqui.")
-      setTimeout(() => {
-        addDoctorMessage("Antes de continuar, você é do Distrito Federal ou região?")
-        setTimeout(() => setChatPhase("qualifying-location"), 2000)
-      }, 2000)
+      addDoctorMessage("Antes de continuar, você é do Distrito Federal ou região?")
+      scheduleAction(() => setChatPhase("qualifying-location"))
     }, 1000)
   }
 
@@ -470,19 +468,19 @@ export default function HarmonizacaoFunnel() {
     if (!unit) {
       addUserMessage("Não sou da região")
       setChatPhase("disqualified")
+      nextMsgAtRef.current = 0
       setTimeout(() => {
         addDoctorMessage("Entendo! No momento atendemos presencialmente no Distrito Federal — Taguatinga e Planaltina.")
-        setTimeout(() => {
-          addDoctorMessage("Quando vier à nossa região, ficaremos felizes em te receber. Até breve! 💕")
-        }, 2500)
+        addDoctorMessage("Quando vier à nossa região, ficaremos felizes em te receber. Até breve! 💕")
       }, 1000)
       return
     }
     setUserUnit(unit)
     addUserMessage(unit)
+    nextMsgAtRef.current = 0
     setTimeout(() => {
       addDoctorMessage("Que ótimo! Você tem disponibilidade para realizar o procedimento nos próximos 15 dias?")
-      setTimeout(() => setChatPhase("qualifying-availability"), 2000)
+      scheduleAction(() => setChatPhase("qualifying-availability"))
     }, 1000)
   }
 
@@ -491,6 +489,7 @@ export default function HarmonizacaoFunnel() {
     if (!isAvailable) {
       addUserMessage("Não tenho disponibilidade agora")
       setChatPhase("disqualified")
+      nextMsgAtRef.current = 0
       setTimeout(() => {
         addDoctorMessage("Sem problema! Quando sentir que é o momento certo, pode retornar por aqui. Cuide-se! 🌸")
       }, 1000)
@@ -498,12 +497,11 @@ export default function HarmonizacaoFunnel() {
     }
     addUserMessage("Sim, tenho disponibilidade nos próximos 15 dias")
     setChatPhase("complaint-question")
+    nextMsgAtRef.current = 0
     setTimeout(() => {
       addDoctorMessage("Perfeito! Então vamos montar o seu plano de harmonização.")
-      setTimeout(() => {
-        addDoctorMessage("O que você mais gostaria de melhorar no seu rosto?", undefined, 2000)
-        setTimeout(() => setChatPhase("complaint-selection"), 3000)
-      }, 2000)
+      addDoctorMessage("O que você mais gostaria de melhorar no seu rosto?", undefined, 2000)
+      scheduleAction(() => setChatPhase("complaint-selection"))
     }, 1000)
   }
 
@@ -524,12 +522,11 @@ export default function HarmonizacaoFunnel() {
       .join(", ")
     addUserMessage(labels)
     setChatPhase("detail-question")
+    nextMsgAtRef.current = 0
     setTimeout(() => {
       addDoctorMessage("Perfeito! Estou anotando aqui...")
-      setTimeout(() => {
-        addDoctorMessage("Me conta um pouco mais sobre o que você busca. Pode descrever com suas palavras.")
-        setTimeout(() => setChatPhase("detail-form"), 4000)
-      }, 2500)
+      addDoctorMessage("Me conta um pouco mais sobre o que você busca. Pode descrever com suas palavras.")
+      scheduleAction(() => setChatPhase("detail-form"))
     }, 1500)
   }
 
@@ -568,13 +565,12 @@ export default function HarmonizacaoFunnel() {
 
     addUserMessage(details.substring(0, 60) + (details.length > 60 ? "..." : ""))
     setChatPhase("analyzing")
+    nextMsgAtRef.current = 0
 
     setTimeout(() => {
       addDoctorMessage("Obrigada! Com isso consigo te orientar muito melhor.")
-      setTimeout(() => {
-        addDoctorMessage("Deixa eu analisar tudo que você me contou...")
-        setTimeout(() => setChatPhase("service"), 3000)
-      }, 2500)
+      addDoctorMessage("Deixa eu analisar tudo que você me contou...")
+      scheduleAction(() => setChatPhase("service"))
     }, 1500)
   }
 
