@@ -254,6 +254,7 @@ export default function HarmonizacaoFunnel() {
   }
 
   const playReceiveSound = () => {
+    if (!audioUnlockedRef.current) return
     if (!receivesfxRef.current) {
       receivesfxRef.current = new Audio(encodeURI("/receive notification.mp3"))
       receivesfxRef.current.volume = 0.4
@@ -264,6 +265,7 @@ export default function HarmonizacaoFunnel() {
   }
 
   const playSendSound = () => {
+    if (!audioUnlockedRef.current) return
     if (!sendSfxRef.current) {
       sendSfxRef.current = new Audio(encodeURI("/send notification.mp3"))
       sendSfxRef.current.volume = 0.4
@@ -343,17 +345,21 @@ export default function HarmonizacaoFunnel() {
     setTimeout(() => {
       addDoctorMessage(
         "Antes de te mostrar os detalhes, preciso entender se a **Natuclinic é realmente o que você procura**.",
-        undefined, 800,
+        undefined, 1400,
       )
-    }, 800)
+    }, 1000)
 
     setTimeout(() => {
-      addDoctorMessage("Nossos atendimentos costumam atrair mulheres que valorizam:", undefined, 600)
-      setTimeout(() => {
-        addListCard(["resultado natural", "técnica avançada", "ambiente premium", "atendimento personalizado"])
-        setTimeout(() => addVideoMessage("/ambiente.mp4"), 400)
-      }, 1500)
-    }, 3500)
+      addDoctorMessage("Nossos atendimentos costumam atrair mulheres que valorizam:", undefined, 1000)
+    }, 4500)
+
+    setTimeout(() => {
+      addListCard(["resultado natural", "técnica avançada", "ambiente premium", "atendimento personalizado"])
+    }, 7000)
+
+    setTimeout(() => {
+      addVideoMessage("/ambiente.mp4")
+    }, 7800)
   }
 
   const handleVideoContinue = () => {
@@ -363,17 +369,17 @@ export default function HarmonizacaoFunnel() {
     setTimeout(() => {
       addDoctorMessage(
         "Nosso espaço foi pensado para você se sentir segura, confortável e bem cuidada durante todo o procedimento.",
-        undefined, 800,
+        undefined, 1400,
       )
-    }, 800)
+    }, 1000)
 
     setTimeout(() => {
-      addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de harmonização", undefined, 600)
-    }, 3500)
+      addDoctorMessage("☕ cappuccino gourmet\n🌿 ambiente relaxante\n✨ protocolo avançado de harmonização", undefined, 1000)
+    }, 5000)
 
     setTimeout(() => {
-      addDoctorMessage("Tudo pensado para que você saia se sentindo **mais bonita e confiante**.", undefined, 700)
-    }, 6500)
+      addDoctorMessage("Tudo pensado para que você saia se sentindo **mais bonita e confiante**.", undefined, 1200)
+    }, 8500)
 
     setTimeout(() => {
       addPhotoGallery([
@@ -385,19 +391,19 @@ export default function HarmonizacaoFunnel() {
         "/fotos-clinica/unnamed (4).webp",
         "/fotos-clinica/unnamed (5).webp",
       ])
-    }, 9000)
+    }, 12000)
 
     setTimeout(() => {
       addDoctorMessage(
         "✨ Nossos procedimentos de Harmonização Facial ✨\n\n✔️ Toxina Botulínica (Botox)\n✔️ Preenchimento Labial\n✔️ Preenchimento Facial\n✔️ Rinomodelação\n✔️ Bioestimuladores de Colágeno\n✔️ Fios de PDO\n✔️ Skinbooster\n\nTodos realizados com produtos de alta qualidade e técnica personalizada para o seu rosto.",
-        undefined, 900,
+        undefined, 1500,
       )
-    }, 11000)
+    }, 14500)
 
     setTimeout(() => {
-      addDoctorMessage("Se esse é o seu perfil, **vamos continuar**.", undefined, 500)
-      setTimeout(() => setChatPhase("pre-qualify-cta"), 1500)
-    }, 15500)
+      addDoctorMessage("Se esse é o seu perfil, **vamos continuar**.", undefined, 1000)
+      setTimeout(() => setChatPhase("pre-qualify-cta"), 2000)
+    }, 19000)
   }
 
   const handlePreQualifyCta = () => {
@@ -646,6 +652,7 @@ export default function HarmonizacaoFunnel() {
                           autoPlay
                           muted
                           playsInline
+                          controls
                           onEnded={() => setChatPhase("video-ended")}
                         />
                       </div>
