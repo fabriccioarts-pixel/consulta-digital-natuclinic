@@ -382,23 +382,17 @@ export default function NatuclinicFunnel() {
   }
 
   const playReceiveSound = () => {
-    if (!receivesfxRef.current) {
-      receivesfxRef.current = new Audio(encodeURI("/receive notification.mp3"))
-      receivesfxRef.current.volume = 0.4
-    }
-    const clone = receivesfxRef.current.cloneNode() as HTMLAudioElement
-    clone.volume = 0.4
-    clone.play().catch(() => {})
+    if (!audioUnlockedRef.current) return
+    const sfx = new Audio(encodeURI("/receive notification.mp3"))
+    sfx.volume = 0.4
+    sfx.play().catch(() => {})
   }
 
   const playSendSound = () => {
-    if (!sendSfxRef.current) {
-      sendSfxRef.current = new Audio(encodeURI("/send notification.mp3"))
-      sendSfxRef.current.volume = 0.4
-    }
-    const clone = sendSfxRef.current.cloneNode() as HTMLAudioElement
-    clone.volume = 0.4
-    clone.play().catch(() => {})
+    if (!audioUnlockedRef.current) return
+    const sfx = new Audio(encodeURI("/send notification.mp3"))
+    sfx.volume = 0.4
+    sfx.play().catch(() => {})
   }
 
   const addDoctorMessage = (content: string, audioUrl?: string, delay = 1000) => {
