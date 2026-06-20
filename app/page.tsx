@@ -158,19 +158,19 @@ export default function NatuclinicFunnel() {
         "Na Natuclinic, criamos uma experiência de estética voltada para mulheres que valorizam **cuidado premium, conforto e resultados superiores**.",
         undefined, 800,
       )
-    }, 2200)
+    }, 1500)
 
     setTimeout(() => {
       addDoctorMessage("Não somos uma clínica popular.", undefined, 600)
-    }, 5000)
+    }, 3200)
 
     setTimeout(() => {
       addDoctorMessage("Nosso atendimento é pensado para quem busca **qualidade acima da média**.", undefined, 700)
-    }, 7200)
+    }, 4800)
 
     setTimeout(() => {
       setChatPhase("intro-cta")
-    }, 10000)
+    }, 6500)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
