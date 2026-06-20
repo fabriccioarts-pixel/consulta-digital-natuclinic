@@ -769,6 +769,18 @@ export default function NatuclinicFunnel() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="relative w-full max-w-[430px] h-screen md:h-screen overflow-hidden flex flex-col md:shadow-2xl">
+          {/* Botão fixo intro-cta */}
+          {chatPhase === "intro-cta" && (
+            <div className="absolute bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/60 to-transparent">
+              <button
+                onClick={handleIntroCta}
+                className="w-full bg-[#4A3328] text-white px-6 py-4 rounded-2xl font-semibold text-base shadow-2xl hover:bg-[#3a271f] transition-all active:scale-95 animate-pulse"
+              >
+                👇 Quero entender como funciona
+              </button>
+            </div>
+          )}
+
           <div className="relative z-10 flex flex-col h-full">
             <div className="bg-[#4A3328] text-white shadow-sm border-b border-[#3a271f] p-4">
               <div className="flex items-center justify-between">
@@ -937,17 +949,7 @@ export default function NatuclinicFunnel() {
                   </div>
                 )}
 
-                {/* PRÉ-QUALIFICAÇÃO: botão inicial */}
-                {chatPhase === "intro-cta" && (
-                  <div className="flex justify-end animate-fade-in pt-2">
-                    <button
-                      onClick={handleIntroCta}
-                      className="bg-[#4A3328] text-white px-6 py-3 rounded-2xl rounded-br-none font-medium text-sm shadow-lg hover:bg-[#3a271f] transition-all active:scale-95"
-                    >
-                      Quero entender como funciona
-                    </button>
-                  </div>
-                )}
+                {/* PRÉ-QUALIFICAÇÃO: botão inicial — renderizado no rodapé fixo abaixo */}
 
                 {/* VÍDEO: botão continuar após término */}
                 {chatPhase === "video-ended" && (
