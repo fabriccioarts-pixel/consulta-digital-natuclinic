@@ -660,19 +660,22 @@ export default function HarmonizacaoFunnel() {
                   )}
 
                   {message.type === "photo-gallery" && (
-                    <div className="flex items-end gap-2">
-                      <div className="w-8 h-8 rounded-full bg-[#4A3328] flex-shrink-0 overflow-hidden">
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-full bg-[#4A3328] flex-shrink-0 overflow-hidden mt-1">
                         <img src="/debora-074.jpg" alt="" className="w-full h-full object-cover" />
                       </div>
-                      <div className="flex gap-2 overflow-x-auto pb-1 max-w-[300px]">
-                        {message.images?.map((src, i) => (
-                          <img
-                            key={i}
-                            src={src}
-                            alt=""
-                            className="w-24 h-24 object-cover rounded-xl flex-shrink-0 border border-border"
-                          />
-                        ))}
+                      <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] max-w-[calc(100%-44px)]">
+                        <div className="flex gap-2 pb-1">
+                          {message.images?.map((src, i) => (
+                            <img
+                              key={i}
+                              src={src}
+                              alt=""
+                              className="w-32 h-32 object-cover rounded-2xl flex-shrink-0 shadow-lg"
+                              style={{ border: "2px solid rgba(74,51,40,0.12)" }}
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
