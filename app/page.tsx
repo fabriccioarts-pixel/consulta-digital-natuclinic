@@ -372,29 +372,28 @@ export default function NatuclinicFunnel() {
     if (audioUnlockedRef.current) return
     audioUnlockedRef.current = true
 
-    if (!receivesfxRef.current) {
-      receivesfxRef.current = new Audio(encodeURI("/receive notification.mp3"))
-      receivesfxRef.current.volume = 0.4
+    // Toca os arquivos reais silenciosamente para desbloquear no mobile
+    const primeAudio = (url: string, ref: React.MutableRefObject<HTMLAudioElement | null>) => {
+      const audio = new Audio(encodeURI(url))
+      audio.volume = 0
+      audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio.volume = 0.4; ref.current = audio }).catch(() => {})
     }
-    if (!sendSfxRef.current) {
-      sendSfxRef.current = new Audio(encodeURI("/send notification.mp3"))
-      sendSfxRef.current.volume = 0.4
-    }
-    // Unlock audio context with silent play
-    const unlock = new Audio()
-    unlock.play().catch(() => {})
+    primeAudio("/receive notification.mp3", receivesfxRef)
+    primeAudio("/send notification.mp3", sendSfxRef)
   }
 
   const playReceiveSound = () => {
     if (!audioUnlockedRef.current) return
-    const sfx = new Audio(encodeURI("/receive notification.mp3"))
+    const base = receivesfxRef.current
+    const sfx = base ? (base.cloneNode() as HTMLAudioElement) : new Audio(encodeURI("/receive notification.mp3"))
     sfx.volume = 0.4
     sfx.play().catch(() => {})
   }
 
   const playSendSound = () => {
     if (!audioUnlockedRef.current) return
-    const sfx = new Audio(encodeURI("/send notification.mp3"))
+    const base = sendSfxRef.current
+    const sfx = base ? (base.cloneNode() as HTMLAudioElement) : new Audio(encodeURI("/send notification.mp3"))
     sfx.volume = 0.4
     sfx.play().catch(() => {})
   }

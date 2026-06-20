@@ -248,27 +248,28 @@ export default function HarmonizacaoFunnel() {
   const unlockAudio = () => {
     if (audioUnlockedRef.current) return
     audioUnlockedRef.current = true
-    if (!receivesfxRef.current) {
-      receivesfxRef.current = new Audio(encodeURI("/receive notification.mp3"))
-      receivesfxRef.current.volume = 0.4
+
+    const primeAudio = (url: string, ref: React.MutableRefObject<HTMLAudioElement | null>) => {
+      const audio = new Audio(encodeURI(url))
+      audio.volume = 0
+      audio.play().then(() => { audio.pause(); audio.currentTime = 0; audio.volume = 0.4; ref.current = audio }).catch(() => {})
     }
-    if (!sendSfxRef.current) {
-      sendSfxRef.current = new Audio(encodeURI("/send notification.mp3"))
-      sendSfxRef.current.volume = 0.4
-    }
-    new Audio().play().catch(() => {})
+    primeAudio("/receive notification.mp3", receivesfxRef)
+    primeAudio("/send notification.mp3", sendSfxRef)
   }
 
   const playReceiveSound = () => {
     if (!audioUnlockedRef.current) return
-    const sfx = new Audio(encodeURI("/receive notification.mp3"))
+    const base = receivesfxRef.current
+    const sfx = base ? (base.cloneNode() as HTMLAudioElement) : new Audio(encodeURI("/receive notification.mp3"))
     sfx.volume = 0.4
     sfx.play().catch(() => {})
   }
 
   const playSendSound = () => {
     if (!audioUnlockedRef.current) return
-    const sfx = new Audio(encodeURI("/send notification.mp3"))
+    const base = sendSfxRef.current
+    const sfx = base ? (base.cloneNode() as HTMLAudioElement) : new Audio(encodeURI("/send notification.mp3"))
     sfx.volume = 0.4
     sfx.play().catch(() => {})
   }
@@ -627,65 +628,52 @@ export default function HarmonizacaoFunnel() {
 
               {/* Messages */}
               {messages.map((message) => (
-                <div key={message.id}>
+                <div key={message.id} className="animate-fade-in">
                   {message.type === "doctor" && (
-                    <div className="flex items-end gap-2 max-w-[85%]">
-                      <div className="w-8 h-8 rounded-full bg-[#4A3328] flex-shrink-0 overflow-hidden">
-                        <img src="/debora-074.jpg" alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="bg-card/90 backdrop-blur-sm border border-border rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
-                        <p className="text-sm leading-relaxed whitespace-pre-line">{renderBold(message.content)}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-[10px] text-muted-foreground">
-                            {message.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {message.type === "user" && (
-                    <div className="flex justify-end">
-                      <div className="bg-[#4A3328] text-white rounded-2xl rounded-br-none px-4 py-3 max-w-[75%] shadow-sm">
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                        <span className="text-[10px] text-white/60 block text-right mt-1">
+                    <div className="flex justify-start">
+                      <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-card/90 backdrop-blur-sm border border-border rounded-bl-none">
+                        <p className="text-sm md:text-base leading-relaxed whitespace-pre-line">{renderBold(message.content)}</p>
+                        <span className="text-[10px] text-muted-foreground/60 mt-1 block">
                           {message.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </div>
                     </div>
                   )}
 
-                  {message.type === "list-card" && (
-                    <div className="flex items-end gap-2 max-w-[85%]">
-                      <div className="w-8 h-8 rounded-full bg-[#4A3328] flex-shrink-0 overflow-hidden">
-                        <img src="/debora-074.jpg" alt="" className="w-full h-full object-cover" />
+                  {message.type === "user" && (
+                    <div className="flex justify-end">
+                      <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-[#4A3328] text-white rounded-br-none">
+                        <p className="text-sm md:text-base leading-relaxed">{message.content}</p>
+                        <div className="flex justify-end items-center gap-1 mt-1 -mb-1 opacity-70">
+                          <span className="text-[10px]">{message.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                        </div>
                       </div>
-                      <div className="bg-card/90 backdrop-blur-sm border border-border rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
-                        <ul className="space-y-1.5">
-                          {message.items?.map((item, i) => (
-                            <li key={i} className="flex items-center gap-2 text-sm">
-                              <span className="text-[#4A3328]">✦</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
+                    </div>
+                  )}
+
+                  {message.type === "list-card" && (
+                    <div className="flex justify-start">
+                      <div className="bg-card/90 backdrop-blur-sm border border-border rounded-2xl rounded-bl-none px-5 py-4 space-y-2 max-w-[80%]">
+                        {message.items?.map((item, i) => (
+                          <div key={i} className="flex items-center gap-2 text-sm">
+                            <span className="text-amber-500">✦</span>
+                            <span>{item}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
 
                   {message.type === "video" && (
-                    <div className="flex items-end gap-2 max-w-[85%]">
-                      <div className="w-8 h-8 rounded-full bg-[#4A3328] flex-shrink-0 overflow-hidden">
-                        <img src="/debora-074.jpg" alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="rounded-2xl rounded-bl-none overflow-hidden shadow-sm border border-border">
+                    <div className="flex justify-start">
+                      <div className="rounded-2xl overflow-hidden max-w-[85%] border border-border shadow-md">
                         <video
                           src={message.videoSrc}
-                          className="w-full max-w-[260px] rounded-2xl rounded-bl-none"
                           autoPlay
                           muted
                           playsInline
                           controls
+                          className="w-full max-h-[320px] object-cover"
                           onEnded={handleVideoEnded}
                         />
                       </div>
@@ -693,11 +681,8 @@ export default function HarmonizacaoFunnel() {
                   )}
 
                   {message.type === "photo-gallery" && (
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-[#4A3328] flex-shrink-0 overflow-hidden mt-1">
-                        <img src="/debora-074.jpg" alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] max-w-[calc(100%-44px)]">
+                    <div className="flex justify-start">
+                      <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] max-w-[85%]">
                         <div className="flex gap-2 pb-1">
                           {message.images?.map((src, i) => (
                             <img
@@ -717,10 +702,7 @@ export default function HarmonizacaoFunnel() {
 
               {/* Typing indicator */}
               {isTyping && (
-                <div className="flex items-end gap-2 max-w-[85%]">
-                  <div className="w-8 h-8 rounded-full bg-[#4A3328] flex-shrink-0 overflow-hidden">
-                    <img src="/debora-074.jpg" alt="" className="w-full h-full object-cover" />
-                  </div>
+                <div className="flex justify-start animate-fade-in">
                   <div className="bg-card/90 backdrop-blur-sm border border-border rounded-2xl rounded-bl-none px-4 py-3">
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" />
