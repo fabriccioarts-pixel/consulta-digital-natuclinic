@@ -769,18 +769,6 @@ export default function NatuclinicFunnel() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="relative w-full max-w-[430px] h-screen md:h-screen overflow-hidden flex flex-col md:shadow-2xl">
-          {/* Botão fixo intro-cta */}
-          {chatPhase === "intro-cta" && (
-            <div className="absolute bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/60 to-transparent">
-              <button
-                onClick={handleIntroCta}
-                className="w-full bg-[#4A3328] text-white px-6 py-4 rounded-2xl font-semibold text-base shadow-2xl hover:bg-[#3a271f] transition-all active:scale-95 animate-pulse"
-              >
-                👇 Quero entender como funciona
-              </button>
-            </div>
-          )}
-
           <div className="relative z-10 flex flex-col h-full">
             <div className="bg-[#4A3328] text-white shadow-sm border-b border-[#3a271f] p-4">
               <div className="flex items-center justify-between">
@@ -949,7 +937,20 @@ export default function NatuclinicFunnel() {
                   </div>
                 )}
 
-                {/* PRÉ-QUALIFICAÇÃO: botão inicial — renderizado no rodapé fixo abaixo */}
+                {/* PRÉ-QUALIFICAÇÃO: botão inicial */}
+                {chatPhase === "intro-cta" && (
+                  <div className="flex justify-end animate-fade-in pt-2">
+                    <button
+                      onClick={handleIntroCta}
+                      className="bg-[#4A3328] text-white px-5 py-3 rounded-2xl rounded-br-none font-medium text-sm shadow-lg hover:bg-[#3a271f] transition-all active:scale-95 flex items-center gap-2"
+                    >
+                      Quero entender como funciona
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 rotate-45 -translate-y-px">
+                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
 
                 {/* VÍDEO: botão continuar após término */}
                 {chatPhase === "video-ended" && (
