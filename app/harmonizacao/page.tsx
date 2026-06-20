@@ -24,7 +24,7 @@ function renderBold(text: string) {
   )
 }
 
-type Complaint = "rugas" | "labios" | "rosto" | "nariz" | "outro"
+type Complaint = "rugas" | "labios" | "rosto" | "nariz" | "rejuvenescimento" | "outro"
 
 interface ServiceInfo {
   title: string
@@ -37,6 +37,7 @@ const complaints: { id: Complaint; label: string; icon: string }[] = [
   { id: "labios", label: "Lábios finos ou assimétricos", icon: "💋" },
   { id: "rosto", label: "Perda de volume / contorno facial", icon: "🫧" },
   { id: "nariz", label: "Formato do nariz", icon: "👃" },
+  { id: "rejuvenescimento", label: "Rejuvenescimento da pele", icon: "🌟" },
   { id: "outro", label: "Outra preocupação com o rosto", icon: "💆" },
 ]
 
@@ -60,6 +61,11 @@ const services: Record<Complaint, ServiceInfo> = {
     title: "Rinomodelação",
     description: "Remodelação do nariz sem cirurgia",
     longDescription: "Procedimento não cirúrgico que utiliza ácido hialurônico para corrigir imperfeições do nariz — elevação da ponta, correção de dorso e harmonização do perfil.",
+  },
+  rejuvenescimento: {
+    title: "Rejuvenescimento Facial",
+    description: "Pele mais jovem, luminosa e firme",
+    longDescription: "Protocolos com Skinbooster, Bioestimuladores de Colágeno e Fios de PDO para restaurar a firmeza, luminosidade e qualidade da pele — combatendo a flacidez e devolvendo a jovialidade de forma gradual e natural.",
   },
   outro: {
     title: "Avaliação de Harmonização Personalizada",
