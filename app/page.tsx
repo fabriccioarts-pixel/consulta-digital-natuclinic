@@ -984,54 +984,46 @@ export default function NatuclinicFunnel() {
 
                 {/* INPUT: nome */}
                 {chatPhase === "name-input" && !isPlayingAudio && (
-                  <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-6 space-y-4 animate-fade-in pt-4">
-                    <form onSubmit={handleNameSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Seu nome</label>
-                        <input
-                          type="text"
-                          value={userName}
-                          onChange={(e) => setUserName(e.target.value)}
-                          placeholder="Digite seu nome..."
-                          className="flex h-12 w-full rounded-md border border-input bg-background/50 px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                          autoFocus
-                        />
-                      </div>
-                      <Button
+                  <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-4 animate-fade-in">
+                    <form onSubmit={handleNameSubmit} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        placeholder="Seu nome..."
+                        className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3328]"
+                        autoFocus
+                      />
+                      <button
                         type="submit"
                         disabled={!userName.trim() || isPlayingAudio}
-                        className="w-full text-base"
-                        size="lg"
+                        className="bg-[#4A3328] text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-[#3a271f] transition-all"
                       >
-                        Continuar
-                      </Button>
+                        Enviar
+                      </button>
                     </form>
                   </div>
                 )}
 
                 {/* INPUT: telefone */}
                 {chatPhase === "phone-input" && !isPlayingAudio && (
-                  <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-6 space-y-4 animate-fade-in pt-4">
-                    <form onSubmit={handlePhoneSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Seu WhatsApp</label>
-                        <input
-                          type="tel"
-                          value={userPhone}
-                          onChange={(e) => setUserPhone(formatPhone(e.target.value))}
-                          placeholder="(00) 00000-0000"
-                          className="flex h-12 w-full rounded-md border border-input bg-background/50 px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                          autoFocus
-                        />
-                      </div>
-                      <Button
+                  <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-4 animate-fade-in">
+                    <form onSubmit={handlePhoneSubmit} className="flex gap-2">
+                      <input
+                        type="tel"
+                        value={userPhone}
+                        onChange={(e) => setUserPhone(formatPhone(e.target.value))}
+                        placeholder="(61) 99999-9999"
+                        className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4A3328]"
+                        autoFocus
+                      />
+                      <button
                         type="submit"
                         disabled={userPhone.replace(/\D/g, "").length < 10 || isPlayingAudio}
-                        className="w-full text-base"
-                        size="lg"
+                        className="bg-[#4A3328] text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-[#3a271f] transition-all"
                       >
-                        Continuar
-                      </Button>
+                        Enviar
+                      </button>
                     </form>
                   </div>
                 )}
