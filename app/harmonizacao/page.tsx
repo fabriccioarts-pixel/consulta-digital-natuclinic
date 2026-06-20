@@ -358,18 +358,18 @@ export default function HarmonizacaoFunnel() {
     setTimeout(() => {
       addVideoMessage("/ambiente.mp4")
     }, 7800)
-  }
 
-  const handleVideoEnded = () => {
-    setChatPhase("pre-qualify")
+    // Mensagem e botão aparecem 4s após o vídeo ser enviado, sem esperar terminar
     setTimeout(() => {
       addDoctorMessage(
         "Nosso espaço foi pensado para você se sentir segura, confortável e bem cuidada durante todo o procedimento.",
         undefined, 1400,
       )
       setTimeout(() => setChatPhase("video-ended"), 300 + 1400 + 800)
-    }, 800)
+    }, 7800 + 4000)
   }
+
+  const handleVideoEnded = () => {}
 
   const handleVideoContinue = () => {
     addUserMessage("Continuar")

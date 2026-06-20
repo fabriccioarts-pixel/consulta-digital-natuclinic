@@ -195,19 +195,18 @@ export default function NatuclinicFunnel() {
       }, 1500)
     }, 3500)
 
-  }
-
-  const handleVideoEnded = () => {
-    setChatPhase("pre-qualify")
-
+    // Mensagem e botão aparecem 4s após o vídeo ser enviado, sem esperar terminar
     setTimeout(() => {
       addDoctorMessage(
         "Nosso espaço foi projetado para proporcionar uma experiência estética premium, com **conforto, tranquilidade e atenção aos detalhes**.",
         undefined, 1200,
       )
-      setTimeout(() => setChatPhase("video-ended"), 1200 + 300 + 1000)
-    }, 800)
+      setTimeout(() => setChatPhase("video-ended"), 300 + 1200 + 800)
+    }, 3500 + 1500 + 400 + 4000)
+
   }
+
+  const handleVideoEnded = () => {}
 
   const handleVideoContinue = () => {
     addUserMessage("Continuar")
