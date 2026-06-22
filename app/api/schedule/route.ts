@@ -100,24 +100,28 @@ export async function POST(request: Request) {
     }
 
     // Create attendance
+    const attPayload = {
+      event_id: EVENT_ID,
+      place_id: PLACE_ID,
+      user_id: USER_ID,
+      patient_id: patientId,
+      timegrid_id: timegridId,
+      start_date: startDate,
+      end_date: endDate,
+    }
+    console.log('[schedule] criando attendance:', JSON.stringify(attPayload))
+
     const attRes = await fetch(`${AMIGO_BASE}/attendances`, {
       method: 'POST',
       headers: amigoHeaders,
-      body: JSON.stringify({
-        event_id: EVENT_ID,
-        place_id: PLACE_ID,
-        user_id: USER_ID,
-        patient_id: patientId,
-        timegrid_id: timegridId,
-        start_date: startDate,
-        end_date: endDate,
-      }),
+      body: JSON.stringify(attPayload),
     })
     const attData = await attRes.json()
+    console.log('[schedule] resposta attendance:', JSON.stringify(attData))
 
     if (attData.status !== 'success') {
       return NextResponse.json(
-        { error: attData.message || 'Erro ao agendar' },
+        { error: attData.message || 'Erro ao agendar', debug: attData },
         { status: 500 },
       )
     }
@@ -139,7 +143,8 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json({ success: true, attendance: attData.data })
-  } catch {
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  } catch (err) {
+    console.error('[schedule] erro interno:', err)
+    return NextResponse.json({ error: 'Erro interno', detail: String(err) }, { status: 500 })
   }
 }
