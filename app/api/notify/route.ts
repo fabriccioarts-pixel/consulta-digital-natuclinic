@@ -6,7 +6,32 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
 const AMIGO_TOKEN = process.env.AMIGO_TOKEN!;
 const AMIGO_BASE = 'https://amigobot-api.amigoapp.com.br';
 
-async function upsertPatientInCRM(name: string, phone: string) {
+interface Utm {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  content?: string;
+}
+
+function buildObservation(utm: Utm, funnel: string): string {
+  const parts = [`Funil: ${funnel}`];
+  if (utm.campaign) parts.push(`Campanha: ${utm.campaign}`);
+  if (utm.source)   parts.push(`Origem: ${utm.source}`);
+  if (utm.medium)   parts.push(`Mídia: ${utm.medium}`);
+  if (utm.content)  parts.push(`Conteúdo: ${utm.content}`);
+  return parts.join(' | ');
+}
+
+function buildUtmTag(utm: Utm): string {
+  if (!utm.source && !utm.campaign) return '🔗 _Acesso direto_';
+  const parts = [];
+  if (utm.source)   parts.push(utm.source);
+  if (utm.medium)   parts.push(utm.medium);
+  if (utm.campaign) parts.push(utm.campaign);
+  return `🎯 ${parts.filter(Boolean).join(' › ')}`;
+}
+
+async function upsertPatientInCRM(name: string, phone: string, observation: string) {
   const headers = {
     Authorization: `Bearer ${AMIGO_TOKEN}`,
     'Content-Type': 'application/json',
@@ -18,12 +43,21 @@ async function upsertPatientInCRM(name: string, phone: string) {
   );
   const existsData = await existsRes.json();
 
-  if (existsData.data?.id) return existsData.data.id;
+  if (existsData.data?.id) {
+    // Paciente já existe — atualiza observação
+    const patientId = existsData.data.id;
+    await fetch(`${AMIGO_BASE}/patients/${patientId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ observations: observation }),
+    }).catch(() => {});
+    return patientId;
+  }
 
   const createRes = await fetch(`${AMIGO_BASE}/patients`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ name, contact_cellphone: phone }),
+    body: JSON.stringify({ name, contact_cellphone: phone, observations: observation }),
   });
   const createData = await createRes.json();
   return createData.data?.id ?? null;
@@ -32,7 +66,7 @@ async function upsertPatientInCRM(name: string, phone: string) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, phone, unit, complaint, details } = body;
+    const { name, phone, unit, complaint, details, utm = {} } = body;
 
     // Input validation
     if (
@@ -50,16 +84,18 @@ export async function POST(request: Request) {
     }
 
     const safeName = name.trim();
+    const funnel = complaint.startsWith('[Harmonização]') ? 'Harmonização Facial' : 'Limpeza de Pele';
+    const observation = buildObservation(utm, funnel);
+    const utmTag = buildUtmTag(utm);
 
-    // Registra paciente no CRM em paralelo com o Telegram
     const [, telegramRes] = await Promise.all([
-      upsertPatientInCRM(safeName, plainPhone).catch(() => null),
+      upsertPatientInCRM(safeName, plainPhone, observation).catch(() => null),
       fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: TELEGRAM_CHAT_ID,
-          text: `🆕 *Novo Lead Natuclinic*\n\n👤 *Nome:* ${safeName}\n📍 *Unidade:* ${unit || "Não informada"}\n🩺 *Queixa:* ${complaint}\n📝 *Detalhes:* ${details}\n\n📱 *WhatsApp:* [${phone}](https://wa.me/55${plainPhone})`,
+          text: `🆕 *Novo Lead Natuclinic*\n\n👤 *Nome:* ${safeName}\n📍 *Unidade:* ${unit || 'Não informada'}\n🩺 *Queixa:* ${complaint}\n📝 *Detalhes:* ${details}\n${utmTag}\n\n📱 *WhatsApp:* [${phone}](https://wa.me/55${plainPhone})`,
           parse_mode: 'Markdown',
         }),
       }),

@@ -119,6 +119,17 @@ export default function HarmonizacaoFunnel() {
   const audioUnlockedRef = useRef(false)
   const userHasInteracted = useRef(false)
   const nextMsgAtRef = useRef(0) // epoch ms when next message slot is free
+  const utmRef = useRef({ source: "", medium: "", campaign: "", content: "" })
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search)
+    utmRef.current = {
+      source: p.get("utm_source") || "",
+      medium: p.get("utm_medium") || "",
+      campaign: p.get("utm_campaign") || "",
+      content: p.get("utm_content") || "",
+    }
+  }, [])
 
   useEffect(() => {
     if (userHasInteracted.current && chatContainerRef.current) {
@@ -560,6 +571,7 @@ export default function HarmonizacaoFunnel() {
         unit: userUnit,
         complaint: `[Harmonização] ${complaintLabels}`,
         details,
+        utm: utmRef.current,
       }),
     }).catch(() => {})
 

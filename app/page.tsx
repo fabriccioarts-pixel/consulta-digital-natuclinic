@@ -141,12 +141,23 @@ export default function NatuclinicFunnel() {
   const audioUnlockedRef = useRef(false)
   const userHasInteracted = useRef(false)
   const nextMsgAtRef = useRef(0) // epoch ms when next message slot is free
+  const utmRef = useRef({ source: "", medium: "", campaign: "", content: "" })
 
   useEffect(() => {
     if (userHasInteracted.current && chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
     }
   }, [messages, isTyping, chatPhase])
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search)
+    utmRef.current = {
+      source: p.get("utm_source") || "",
+      medium: p.get("utm_medium") || "",
+      campaign: p.get("utm_campaign") || "",
+      content: p.get("utm_content") || "",
+    }
+  }, [])
 
   useEffect(() => {
     playBackgroundMusic()
@@ -612,6 +623,7 @@ export default function NatuclinicFunnel() {
         unit: userUnit,
         complaint: complaintLabel,
         details: fullDetails,
+        utm: utmRef.current,
       }),
     })
       .then((res) => res.json())
