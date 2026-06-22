@@ -5,7 +5,7 @@ declare global {
   }
 }
 
-const PIXEL_ID = "924765982765131"
+const PIXEL_ID = "1739556637199422"
 
 function isPreviewMode(): boolean {
   if (typeof window === "undefined") return false
