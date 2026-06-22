@@ -358,7 +358,7 @@ export default function HarmonizacaoFunnel() {
 
   const handleIntroCta = () => {
     unlockAudio()
-    trackCustom("HarmonizacaoFunnelStart")
+    trackCustom("InicioConversa_Harmonizacao")
     addUserMessage("Quero saber mais")
     setChatPhase("pre-qualify")
     nextMsgAtRef.current = 0
@@ -438,7 +438,7 @@ export default function HarmonizacaoFunnel() {
 
   const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    trackCustom("HarmonizacaoNameSubmitted")
+    trackCustom("NomeInformado_Harmonizacao")
     if (!userName.trim() || isPlayingAudio) return
     addUserMessage(userName)
     setChatPhase("phone-question")
@@ -516,7 +516,7 @@ export default function HarmonizacaoFunnel() {
 
   const handleComplaintsConfirm = () => {
     if (selectedComplaints.size === 0 || isPlayingAudio) return
-    trackCustom("HarmonizacaoComplaintSelected", { complaints: [...selectedComplaints] })
+    trackCustom("QueixaSelecionada_Harmonizacao", { complaints: [...selectedComplaints] })
     const labels = [...selectedComplaints]
       .map((id) => complaints.find((c) => c.id === id)?.label || "")
       .join(", ")

@@ -169,7 +169,7 @@ export default function NatuclinicFunnel() {
 
   const handleIntroCta = () => {
     unlockAudio()
-    trackCustom("FunnelStart")
+    trackCustom("InicioConversa_LimpezaPele")
     addUserMessage("Quero entender como funciona")
     setChatPhase("pre-qualify")
     nextMsgAtRef.current = 0
@@ -463,7 +463,7 @@ export default function NatuclinicFunnel() {
 
   const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    trackCustom("NameSubmitted")
+    trackCustom("NomeInformado_LimpezaPele")
     if (!userName.trim() || isPlayingAudio) return
 
     addUserMessage(userName)
@@ -568,7 +568,7 @@ export default function NatuclinicFunnel() {
 
   const handleComplaintSelect = (complaint: Complaint) => {
     if (isPlayingAudio) return
-    trackCustom("ComplaintSelected", { complaint })
+    trackCustom("QueixaSelecionada_LimpezaPele", { complaint })
 
     setSelectedComplaint(complaint)
     const complaintLabel = complaints.find((c) => c.id === complaint)?.label || ""
